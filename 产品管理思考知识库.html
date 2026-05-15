@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>实习离职前和部门leader的一次oneone</title>
+<style>
+  :root {
+    --bg: #f3f0ec;
+    --card: #faf8f5;
+    --text: #3a3330;
+    --text-secondary: #6b5f5b;
+    --text-muted: #9e918c;
+    --pink: #b88b93;
+    --pink-light: #f5eff1;
+    --pink-border: #e5d8db;
+    --yellow: #b8ab8a;
+    --yellow-light: #f6f3eb;
+    --purple: #9688a2;
+    --purple-light: #f2f0f5;
+    --purple-border: #e1dce8;
+    --highlight: #f1ebd8;
+    --divider: #e8e3dc;
+    --radius: 6px;
+    --max-w: 800px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 2.05;
+    font-weight: 300;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .container { max-width: var(--max-w); margin: 0 auto; padding: 4rem 1.5rem 6rem; }
+
+  /* ── Header ── */
+  .header {
+    text-align: center;
+    padding: 3rem 0 3.5rem;
+  }
+  .header h1 {
+    font-family: Georgia, "Noto Serif SC", "STSong", "SimSun", "KaiTi", serif;
+    font-size: 1.9rem;
+    font-weight: 400;
+    color: var(--text);
+    letter-spacing: 0.04em;
+    line-height: 1.5;
+  }
+  .header .date {
+    margin-top: 0.8rem;
+    font-size: 0.88rem;
+    color: var(--text-muted);
+    font-weight: 300;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── Progress bar ── */
+  .progress-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 3.5rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--divider);
+  }
+  .progress-step {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    font-size: 0.8rem;
+    font-weight: 300;
+    color: var(--text-muted);
+    text-decoration: none;
+    padding: 0.3rem 0.8rem;
+    border-radius: 100px;
+    transition: color 0.2s;
+    white-space: nowrap;
+  }
+  .progress-step:hover { color: var(--text-secondary); }
+  .progress-step .step-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    opacity: 0.75;
+  }
+  .progress-step.prep .step-dot { background: var(--yellow); }
+  .progress-step.talk .step-dot { background: var(--pink); }
+  .progress-step.review .step-dot { background: var(--purple); }
+  .progress-arrow { color: var(--text-muted); font-size: 0.65rem; margin: 0 0.5rem; }
+
+  /* ── Navigation ── */
+  .nav-strip {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    margin: 3.5rem 0;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--divider);
+  }
+  .nav-row {
+    display: flex;
+    justify-content: center;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+  }
+  .nav-strip a {
+    font-size: 0.78rem;
+    font-weight: 300;
+    color: var(--text-secondary);
+    text-decoration: none;
+    padding: 0.35rem 0.8rem;
+    border-radius: 100px;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .nav-strip a:hover { background: rgba(0,0,0,0.04); color: var(--text); }
+
+  /* ── Section Block ── */
+  .section-block {
+    margin-bottom: 3rem;
+    padding: 2.2rem 2rem;
+    border-radius: var(--radius);
+    background: var(--card);
+    border: 1px solid var(--divider);
+  }
+  .section-block.prep { border-top: 2px solid var(--yellow); }
+  .section-block.product {
+    border-top: 2px solid var(--pink);
+    background: var(--pink-light);
+    border-color: var(--pink-border);
+  }
+  .section-block.mgmt {
+    border-top: 2px solid var(--purple);
+    background: var(--purple-light);
+    border-color: var(--purple-border);
+  }
+  .section-block.review { border-top: 2px solid var(--purple); }
+
+  .section-label {
+    display: inline-block;
+    font-size: 0.7rem;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    padding: 0.2rem 0.7rem;
+    border-radius: 3px;
+    margin-bottom: 1.5rem;
+  }
+  .section-block.prep .section-label { color: #8a7d68; background: var(--yellow-light); }
+  .section-block.product .section-label { color: #9b7c83; background: #f2e8eb; }
+  .section-block.mgmt .section-label { color: #827891; background: #ece8f0; }
+  .section-block.review .section-label { color: #827891; background: #ece8f0; }
+
+  /* ── QA Card ── */
+  .qa { padding: 1.5rem 0; }
+  .qa + .qa { border-top: 1px solid var(--divider); }
+  .qa:first-of-type { padding-top: 0; }
+  .qa:last-of-type { padding-bottom: 0; }
+
+  .qa-q {
+    font-family: "Noto Serif SC", serif;
+    font-size: 1.02rem;
+    font-weight: 400;
+    color: var(--text);
+    margin-bottom: 0.7rem;
+    line-height: 1.7;
+  }
+  .section-block.product .qa-q::before { content: 'Q'; font-size: 0.65rem; font-weight: 400; color: var(--pink); margin-right: 0.5rem; vertical-align: middle; letter-spacing: 0.05em; }
+  .section-block.mgmt .qa-q::before { content: 'Q'; font-size: 0.65rem; font-weight: 400; color: var(--purple); margin-right: 0.5rem; vertical-align: middle; letter-spacing: 0.05em; }
+
+  .qa-a {
+    font-size: 0.92rem;
+    color: var(--text-secondary);
+    line-height: 1.95;
+    font-weight: 300;
+  }
+  .qa-a p { margin-bottom: 0.65rem; }
+  .qa-a p:last-child { margin-bottom: 0; }
+
+  /* Inline highlights */
+  .qa-a em { font-style: normal; background: var(--highlight); padding: 0.04rem 0.25rem; border-radius: 2px; font-weight: 300; color: var(--text); }
+  .qa-a strong { font-weight: 500; color: var(--text); }
+
+  /* Speech bubble */
+  .speech-bubble {
+    margin: 0.5rem 0;
+    padding: 0.6rem 0.9rem;
+    background: var(--yellow-light);
+    border-left: 2px solid var(--yellow);
+    border-radius: 0 4px 4px 0;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.8;
+    font-weight: 300;
+  }
+
+  /* Prep / Review text */
+  .plain-text { font-size: 0.92rem; color: var(--text-secondary); line-height: 1.95; font-weight: 300; }
+  .plain-text p { margin-bottom: 0.65rem; }
+  .plain-text p:last-child { margin-bottom: 0; }
+  .plain-text ol { padding-left: 1.3rem; }
+  .plain-text ol li { margin-bottom: 0.5rem; padding-left: 0.2rem; }
+  .plain-text ol li:last-child { margin-bottom: 0; }
+  .plain-text ul {
+    list-style: none; padding: 0; margin: 0.45rem 0;
+  }
+  .plain-text ul li {
+    position: relative; padding: 0.22rem 0 0.22rem 1.2rem; line-height: 1.8;
+  }
+  .plain-text ul li::before {
+    content: '—'; position: absolute; left: 0; color: var(--text-muted); font-size: 0.7rem;
+  }
+
+  /* Nested list */
+  .qa-a ul {
+    list-style: none;
+    padding: 0;
+    margin: 0.5rem 0;
+  }
+  .qa-a ul li {
+    position: relative;
+    padding: 0.25rem 0 0.25rem 1.2rem;
+    line-height: 1.8;
+  }
+  .qa-a ul li::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: var(--text-muted);
+    font-size: 0.7rem;
+  }
+
+  /* Ordered flow */
+  .flow-row {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-wrap: wrap;
+    margin: 0.5rem 0;
+    font-size: 0.88rem;
+    font-weight: 300;
+  }
+  .flow-row .step {
+    background: var(--yellow-light);
+    padding: 0.15rem 0.55rem;
+    border-radius: 3px;
+    color: var(--text-secondary);
+  }
+  .flow-row .arr { color: var(--text-muted); }
+
+  /* Layers */
+  .layer {
+    margin: 0.6rem 0;
+    padding: 0.7rem 0.9rem;
+    background: var(--pink-light);
+    border-left: 2px solid var(--pink);
+    border-radius: 0 4px 4px 0;
+    font-size: 0.88rem;
+    line-height: 1.85;
+    font-weight: 300;
+  }
+  .section-block.mgmt .layer { border-left-color: var(--purple); background: #ece8f0; }
+  .layer .layer-tag {
+    font-size: 0.7rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+  }
+  .section-block.product .layer .layer-tag { color: #9b7c83; }
+  .section-block.mgmt .layer .layer-tag { color: #827891; }
+
+  /* Quote */
+  .insight-line {
+    margin: 0.7rem 0;
+    padding: 0.6rem 0.9rem;
+    font-family: "Noto Serif SC", serif;
+    font-size: 0.95rem;
+    color: var(--text);
+    background: var(--yellow-light);
+    border-radius: 4px;
+    text-align: center;
+    letter-spacing: 0.04em;
+    line-height: 1.75;
+    font-weight: 300;
+  }
+  .section-block.mgmt .insight-line { background: #ece8f0; }
+
+  /* ── Footer ── */
+  .footer {
+    text-align: center;
+    padding: 2.5rem 0 1rem;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+    font-weight: 300;
+    border-top: 1px solid var(--divider);
+    letter-spacing: 0.04em;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 640px) {
+    .container { padding: 2rem 1rem 4rem; }
+    .header { padding: 2rem 0 2.5rem; }
+    .header h1 { font-size: 1.45rem; }
+    .section-block { padding: 1.5rem 1.1rem; margin-bottom: 2rem; }
+    .qa { padding: 1.1rem 0; }
+    .qa-q { font-size: 0.95rem; }
+    .qa-a { font-size: 0.88rem; }
+    .nav-strip { gap: 0.3rem; margin: 2.5rem 0; padding-bottom: 1.5rem; }
+    .nav-strip a { font-size: 0.72rem; padding: 0.3rem 0.65rem; }
+    .progress-bar { flex-wrap: wrap; gap: 0.3rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ═══════════ HEADER ═══════════ -->
+  <div class="header">
+    <h1>实习离职前和部门leader的一次oneone</h1>
+    <div class="date">请所有实习生大胆约1on1！</div>
+  </div>
+
+  <!-- ═══════════ 进度条 ═══════════ -->
+  <div class="progress-bar">
+    <a href="#sec-prep" class="progress-step prep"><span class="step-dot"></span>前置准备</a>
+    <span class="progress-arrow">→</span>
+    <a href="#sec-talk" class="progress-step talk"><span class="step-dot"></span>聊什么</a>
+    <span class="progress-arrow">→</span>
+    <a href="#sec-review" class="progress-step review"><span class="step-dot"></span>复盘及后续</a>
+  </div>
+
+  <!-- ═══════════ 一、前置准备 ═══════════ -->
+  <div class="section-block prep" id="sec-prep">
+    <div class="section-label">一 · 前置准备</div>
+    <div class="plain-text">
+      <ol>
+        <li><strong>提前2-3天询问对方意愿、何时空闲。</strong>
+          <div class="speech-bubble">「xx哥/姐！我xx lastday啦，想约你个时间oneone~这段时间收获很多，但有一些业务理解和职业发展的困惑想找你聊一聊，不知道哥/姐什么时候有空呢！」</div>
+          不要说太多废话，诚恳表明目的就好。</li>
+        <li><strong>确定时间后主动建日程 + 订会议室。</strong><br>不要给对方添麻烦。</li>
+        <li><strong>在备忘录里提前准备想问的问题。</strong><br>部门leader是产品经理出身，因为自己对产品很感兴趣，所以分别从产品经理和管理者视角准备了问题。</li>
+        <li><strong>如果有离职小礼物，或者准备的咖啡奶茶，都可以一起带上。</strong></li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- ═══════════ 导航 ═══════════ -->
+  <nav class="nav-strip">
+    <div class="nav-row">
+      <a href="#sec-product">产品视角</a>
+      <a href="#qa-p1">产品形态</a>
+      <a href="#qa-p2">PMF</a>
+      <a href="#qa-p3">指标体系</a>
+      <a href="#qa-p4">运营×产品</a>
+      <a href="#qa-p5">AI×PM</a>
+    </div>
+    <div class="nav-row">
+      <a href="#sec-mgmt">管理者视角</a>
+      <a href="#qa-m1">职业路径</a>
+      <a href="#qa-m2">Burnout</a>
+      <a href="#qa-m3">WLB</a>
+      <a href="#qa-m4">团队管理</a>
+      <a href="#qa-m5">面试标准</a>
+      <a href="#qa-m6">未来方向</a>
+    </div>
+  </nav>
+
+  <!-- ═══════════ 二、聊什么 ═══════════ -->
+  <div id="sec-talk"></div>
+
+  <!-- ═══════════ 产品视角 ═══════════ -->
+  <div class="section-block product" id="sec-product">
+    <div class="section-label">二 · 聊什么 / 产品视角</div>
+
+    <!-- P1 -->
+    <div class="qa" id="qa-p1">
+      <div class="qa-q">产品形态的变化历程，以及导致方向变化的因素是什么？</div>
+      <div class="qa-a">
+        <p>首先要理解两类决策模型的差异：一种是<strong>正三角</strong>——决策从上到下传导，方向由顶层定调后逐级落地；另一种是<strong>倒三角</strong>——基层在具体场景中不断试错，自下而上卷出方向。两种模型没有绝对优劣，但决定了产品演进的底层节奏。</p>
+        <p>产品的用户链路本质上都是 <em>发现 → 决策 → 交易</em>，关键在于当前阶段的重心落在哪里。方向的变化通常受三股力量拉扯：<strong>老板意志</strong>（公司战略定位决定资源往哪投）、<strong>产品所处的用户阶段</strong>（用户需要的是信息还是交易工具）、以及<strong>自身能力土壤</strong>（你有什么样的供给生态）。</p>
+      </div>
+    </div>
+
+    <!-- P2 -->
+    <div class="qa" id="qa-p2">
+      <div class="qa-q">产品价值（PMF）和用户心智如何契合？</div>
+      <div class="qa-a">
+        <p>大厂普遍强调 SOP 和方法论，对初级产品经理来说，这套体系能保证你不把事情做偏、不出错。<strong>但产品经理做到后面，很靠天赋。</strong>流程可以保下限，上限靠的是人对用户需求的本能嗅觉。</p>
+        <p>产品最核心的问题从来不变：<em>用户有什么需求，我怎么帮他解决。</em>产品价值就是帮用户解决问题——本质上你提供的是一个工具。区别只在于有的工具帮用户做决策，有的工具帮用户完成交易，有的工具帮用户打发时间。</p>
+        <p>但<strong>用户心智是一个长期灌输的结果</strong>，非常吃规模效应。用户为什么打开你而不是另一个 app？这个第一反应是长期"喂"出来的，不是一次改版能扭转的。每个产品都有自己的创作人性格——有些偏算法驱动，有些偏社区信任，有些偏交易效率。它们之所以不同，不是因为功能列表不一样，而是用户心里对它们的<strong>认知锚</strong>不一样。</p>
+      </div>
+    </div>
+
+    <!-- P3 -->
+    <div class="qa" id="qa-p3">
+      <div class="qa-q">组里的整体指标是怎么定的？</div>
+      <div class="qa-a">
+        <p>这个问题分三层看：</p>
+
+        <div class="layer">
+          <div class="layer-tag">第一层 · 你在解决什么问题</div>
+          指标不是从天上掉下来的，<strong>它从你要解决的问题里长出来。</strong>交易型产品——你要帮用户完成交易，那就看交易规模和交易人数有没有变多。决策型产品——你要帮用户做选择，那就看有多少人愿意用你做决策，以及决策之后有没有真正完成交易。问题定义不同，指标体系的基因就不同。
+        </div>
+
+        <div class="layer">
+          <div class="layer-tag">第二层 · 指标优先级</div>
+          同一款产品可能同时看多个指标，但<strong>优先级由产品的性质决定。</strong>决策型产品的核心指标是用户规模（更多人用你），交易型产品的核心指标是交易规模（用了之后买更多）。资源有限的时候，优先级就是方向。
+        </div>
+
+        <div class="layer">
+          <div class="layer-tag">第三层 · 指标怎么拆</div>
+          <div class="flow-row">
+            <span class="step">PMF → 大指标</span>
+            <span class="arr">→</span>
+            <span class="step">大指标 → 小指标</span>
+            <span class="arr">→</span>
+            <span class="step">区分输入指标 &amp; 输出指标</span>
+            <span class="arr">→</span>
+            <span class="step">落举措</span>
+          </div>
+          拆解的关键是区分<strong>输入指标和输出指标</strong>——区分标准只有一个：<strong>人为能不能干预。</strong>能干预的是输入，只能观察的是输出。拆完发现全是输出指标没有输入指标，说明你还没找到杠杆。
+        </div>
+      </div>
+    </div>
+
+    <!-- P4 -->
+    <div class="qa" id="qa-p4">
+      <div class="qa-q">运营和产品是什么关系？各自的角色有什么不同？</div>
+      <div class="qa-a">
+        <p><strong>理想状态是产品和运营绑定合作。</strong>两者都在帮用户解决问题，区别在于介入的阶段和方式不同：运营在初始阶段下<strong>定义</strong>——这件事在用户心智里到底是什么；产品做<strong>包装</strong>——把它变成用户能上手用的东西。</p>
+
+        <p>这些事可以拆成三个阶段：</p>
+        <ul>
+          <li><strong>第一阶段 — 产品 MVP：</strong>产品是一个壳，先把最小闭环跑通，验证用户是否真的有这个需求</li>
+          <li><strong>第二阶段 — 生态：</strong>建政策和规则，由运营来定调，定义什么是好内容、好供给、好体验</li>
+          <li><strong>第三阶段 — 放大：</strong>拓展人群、寻找流量，把验证过的东西推向更大的盘子</li>
+        </ul>
+        <p><em>一个常见的问题是：营销动作本质上是放大，但如果前两个阶段没做扎实就急着拉流量，流量来了也接不住。用户进来发现货不对板，反而比不来更糟糕。</em></p>
+      </div>
+    </div>
+
+    <!-- P5 -->
+    <div class="qa" id="qa-p5">
+      <div class="qa-q">AI 时代下，怎么看待传统产品经理？文科生有什么优劣势？</div>
+      <div class="qa-a">
+        <p>AI 目前的核心价值是<strong>提效 + 校准 / 思维碰撞</strong>。本质是帮你提高自己的能力边界，而不是替代你——它让你更快地试、更准地判断。</p>
+        <p>行业确实太饱和了，但依然有一波真正有天赋的人在，他们的核心能力是<strong>想象力</strong>——能看到别人看不到的可能性。有些公司崇尚灵性设计，把产品当作一件有创作属性的事。<em>产品 sense 就是把自己想象成用户</em>，这一点所有人都可以通过换位思考习得，它不是少数人的专利，但需要长期的刻意练习。</p>
+
+        <p>交互形式经历了三代演进：</p>
+        <ul>
+          <li><strong>第一代</strong> — 人和 PC（单向，用户搜索获取信息）</li>
+          <li><strong>第二代</strong> — 人和手机（双向，用户既消费内容也创造内容）</li>
+          <li><strong>第三代</strong> — 依然是人和手机，但融入了人和 AI、Agent 的交互。<em>仍然需要容器</em>——信息可以碎片化，但承载信息的超级入口永远就那么几个</li>
+        </ul>
+
+        <p>产品经理内部也在分化：<strong>策略产品</strong>跟算法打交道，目标是让推荐推得更准；<strong>用户产品</strong>跟体验打交道，目标是让用户用得更爽。无论哪条线，最终比的都是你对用户的理解深度。信息爆炸让 app 看起来在去中心化，但<strong>实际上超级 app 就那么几个</strong>——能成为用户心智中那个"容器"的产品，永远稀缺。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ 管理者视角 ═══════════ -->
+  <div class="section-block mgmt" id="sec-mgmt">
+    <div class="section-label">二 · 聊什么 / 管理者视角</div>
+
+    <!-- M1 -->
+    <div class="qa" id="qa-m1">
+      <div class="qa-q">你自己的职业发展路径是怎样的？</div>
+      <div class="qa-a">
+        <p>最深的体会是：<em>工作是反人性的。</em>如果一份工作让你觉得每件事都是被迫的，再高的薪水也撑不久。你得先想明白自己到底要什么，找到工作中那个让你有爽感的来源——可能是创造新东西的快感，可能是数据涨了的正反馈，可能是帮用户解决了真实问题的满足感。<strong>那个东西才是你走下去的燃料。</strong></p>
+      </div>
+    </div>
+
+    <!-- M2 -->
+    <div class="qa" id="qa-m2">
+      <div class="qa-q">有没有陷入过职场 Burnout 期？</div>
+      <div class="qa-a">
+        <p>有过，而且每次 burn out 之后复盘，根源都不在于"太累了"，而在于<strong>失控感</strong>——你发现自己在做的事情推不动，或者方向偏离了但无力扭转。</p>
+        <ul>
+          <li><strong>一次典型的失败：</strong>做一个创新项目时，只顾埋头推自己这边的进度，没有关注合作方的产出和进展，等到发现对不齐的时候已经晚了。最后项目失败，不是因为方向不对，而是协同断裂。</li>
+        </ul>
+        <p>最核心的教训是——<em>做大资源投入需要谨慎。</em>资源越大，失败的代价越大，失控时的反噬也越大。小步快跑验证，确认了再放资源，是对自己也是对团队的一种保护。</p>
+      </div>
+    </div>
+
+    <!-- M3 -->
+    <div class="qa" id="qa-m3">
+      <div class="qa-q">你是否实现了 WLB？</div>
+      <div class="qa-a">
+        <p>WLB 不是靠少干活实现的，是靠<strong>提高 ROI</strong>实现的。核心思路是<em>高产出低投入</em>——用更短的时间发挥更多的价值。</p>
+        <p>前提是你得知道什么事情是真正重要的。大多数人忙不是因为事多，是因为分不清优先级，把 80% 的时间花在了只有 20% 产出的事情上。<strong>判断力来自数据驱动</strong>——数据告诉你什么杠杆最大，你就把时间砸在杠杆上，剩下的能砍就砍。</p>
+      </div>
+    </div>
+
+    <!-- M4 -->
+    <div class="qa" id="qa-m4">
+      <div class="qa-q">管理团队时，你更青睐什么样的下属？</div>
+      <div class="qa-a">
+        <p>首先得承认一个事实：人大概率会喜欢和自己相似的人，这是本能。管理者也一样，你天然会被和自己思维方式、做事节奏接近的人吸引。</p>
+        <p>但对团队来说，<strong>氛围是最重要的</strong>。再强的人堆在一起，如果氛围不对，产出也出不来。具体到个人，我倾向于选择有<em>灵性和创造力</em>的人——那些不需要每一步都被指导、自己能长出东西来的人。你给方向、给资源、给信任，他能自己找到路径。</p>
+      </div>
+    </div>
+
+    <!-- M5 -->
+    <div class="qa" id="qa-m5">
+      <div class="qa-q">你面试筛选人的标准是什么？</div>
+      <div class="qa-a">
+        <div class="layer">
+          <div class="layer-tag">第一关 · 淘汰约 30%</div>
+          能不能把事情<strong>讲明白</strong>。很多人简历上写满了项目，但一问"为什么做、做了什么、结果是什么"就绕圈子。表达不清的背后往往是思考不清——如果你真的想透了，你不可能讲不明白。
+        </div>
+        <div class="layer">
+          <div class="layer-tag">第二关 · 淘汰约 90%</div>
+          对这件事有没有<strong>更深刻的见解</strong>——不是复述自己做过的执行动作，而是能跳出来看：有没有<strong>跳出执行的视角</strong>，有没有想过<strong>别的方案</strong>。我会追问：如果不这么做会怎样？如果现在重做一次，你会怎么选？大多数人到这就答不出了，因为他们从未反过来想过。
+        </div>
+        <p><em>核心能力：多让自己反过来想，保持批判性思维。</em>不只是对别人的方案批判，更要对自己的判断批判。能执行的人很多，能判断"为什么做、值不值得做、做错了怎么办"的人极少。</p>
+      </div>
+    </div>
+
+    <!-- M6 -->
+    <div class="qa" id="qa-m6">
+      <div class="qa-q">未来可以尝试的互联网职业方向和可提升的空间？</div>
+      <div class="qa-a">
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ 三、复盘及后续 ═══════════ -->
+  <div class="section-block review" id="sec-review">
+    <div class="section-label">三 · 复盘及后续</div>
+    <div class="plain-text">
+      <ol>
+        <li>我的姐人超好而且业务能力很强，给到的一些观点都让我有了新的认识，聊完之后我对她的回答进行了梳理和复盘。</li>
+        <li>如果整体1on1很顺畅的话，后续有改简历 / 选offer等职业需求都可以大胆请教。</li>
+      </ol>
+    </div>
+  </div>
+
+  <!-- ═══════════ FOOTER ═══════════ -->
+  <div class="footer">
+    离职前的最后一课，收好，往前走吧。
+  </div>
+
+</div>
+
+</body>
+</html>
