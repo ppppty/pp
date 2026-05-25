@@ -3,6 +3,7 @@ name: Deploy to Pages
 on:
   push:
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   deploy:
@@ -15,9 +16,35 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
       - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: paichang-system/package-lock.json
+
+      - name: Build 排期系统
+        working-directory: paichang-system
+        run: |
+          npm ci
+          npm run build
+
+      - name: Assemble deploy directory
+        run: |
+          mkdir -p _deploy
+          # Root static files (exclude sub-projects)
+          cp index.html _deploy/ 2>/dev/null || true
+          cp 1on1.html _deploy/ 2>/dev/null || true
+          cp -r paichang-system/dist/* _deploy/
+          # Also keep paichang as a sub-path
+          mkdir -p _deploy/paichang
+          cp -r paichang-system/dist/* _deploy/paichang/
+
       - uses: actions/configure-pages@v4
+
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: .
+          path: _deploy
+
       - uses: actions/deploy-pages@v4
         id: deployment
