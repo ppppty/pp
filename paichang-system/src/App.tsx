@@ -1,486 +1,278 @@
-import { useState, type ReactNode } from 'react';
+import { useMemo, useState, type ReactNode } from 'react';
 import {
-  BarChart3,
+  BookOpen,
   Calendar,
-  CheckCircle2,
-  CircleCheckBig,
-  Clock,
+  ChevronLeft,
+  ChevronRight,
+  ClipboardList,
   ExternalLink,
-  Eye,
-  EyeOff,
-  FileText,
-  Image,
-  Lightbulb,
-  ListChecks,
-  Lock,
-  MessageSquare,
-  Settings,
-  UploadCloud,
-  Wrench,
+  Link as LinkIcon,
+  LogIn,
+  LogOut,
+  Plus,
+  ShieldCheck,
   X,
 } from 'lucide-react';
 
-type Role = 'business' | 'approval' | 'operation';
-type MainTab = 'marketing' | 'progress';
+type Tab = 'calendar' | 'submit' | 'submissions' | 'guide';
+type PositionType = 'top' | 'middle' | 'popup' | 'sidebar';
+type SubmissionStatus = 'pending' | 'approved' | 'rejected';
 
-interface Activity {
+interface Schedule {
   id: string;
-  name: string;
-  level: 'S' | 'A' | 'B';
-  owner: string;
-  date: string;
-  status: '待审批' | '待排期' | '待上线';
+  positionType: PositionType;
+  activityName: string;
+  region: string;
+  startDate: string;
+  endDate: string;
+  remark?: string;
 }
 
-const activityRows: Activity[] = [
-  { id: 'a1', name: '暑期亲子景区联动', level: 'S', owner: 'demo', date: '2026-06-01', status: '待审批' },
-  { id: 'a2', name: '江浙沪周边游榜单', level: 'A', owner: 'lixiao', date: '2026-06-08', status: '待排期' },
-  { id: 'a3', name: '夜游门票限时活动', level: 'B', owner: 'wangyi', date: '2026-06-15', status: '待上线' },
+interface Submission {
+  id: string;
+  activityName: string;
+  positionType: PositionType;
+  region: string;
+  startDate: string;
+  endDate: string;
+  misId: string;
+  status: SubmissionStatus;
+  description: string;
+}
+
+const positions = [
+  { key: 'top', label: '顶通', dot: 'bg-rose-300', text: 'text-rose-600', bg: 'bg-rose-50', border: 'border-rose-200' },
+  { key: 'middle', label: '中通', dot: 'bg-sky-300', text: 'text-sky-600', bg: 'bg-sky-50', border: 'border-sky-200' },
+  { key: 'popup', label: '弹窗', dot: 'bg-violet-300', text: 'text-violet-600', bg: 'bg-violet-50', border: 'border-violet-200' },
+  { key: 'sidebar', label: '侧边栏', dot: 'bg-emerald-300', text: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200' },
+] as const;
+
+const seedSchedules: Schedule[] = [
+  { id: 's1', positionType: 'top', activityName: '北京环球影城春季特惠', region: '全国', startDate: '2026-04-02', endDate: '2026-04-08', remark: '重点营销活动' },
+  { id: 's2', positionType: 'middle', activityName: '上海迪士尼乐园奇妙夜', region: '江浙沪', startDate: '2026-04-06', endDate: '2026-04-12' },
+  { id: 's3', positionType: 'popup', activityName: '广州长隆亲子季', region: '广东', startDate: '2026-04-11', endDate: '2026-04-16' },
+  { id: 's4', positionType: 'sidebar', activityName: '杭州西湖踏青榜单', region: '江浙沪', startDate: '2026-04-14', endDate: '2026-04-21' },
+  { id: 's5', positionType: 'top', activityName: '五一提前订景区门票', region: '全国', startDate: '2026-04-22', endDate: '2026-04-30' },
+  { id: 's6', positionType: 'middle', activityName: '成都熊猫基地热卖', region: '四川', startDate: '2026-04-25', endDate: '2026-05-03' },
 ];
 
-const processSteps = [
-  { label: '活动提报', icon: FileText, bg: 'bg-blue-100', color: 'text-blue-600' },
-  { label: '运营排期', icon: Calendar, bg: 'bg-green-100', color: 'text-green-600' },
-  { label: '物料准备', icon: Image, bg: 'bg-pink-100', color: 'text-pink-600' },
-  { label: '点位配置', icon: Settings, bg: 'bg-purple-100', color: 'text-purple-600' },
-  { label: '活动上线', icon: CircleCheckBig, bg: 'bg-orange-100', color: 'text-orange-600' },
+const seedSubmissions: Submission[] = [
+  { id: 'sub1', activityName: '张家界天门山云海季', positionType: 'top', region: '华中', startDate: '2026-04-18', endDate: '2026-04-24', misId: 'zhangsan', status: 'pending', description: '配合春季旅游高峰，申请顶部通栏露出。' },
+  { id: 'sub2', activityName: '桂林漓江竹筏票促销', positionType: 'popup', region: '广西', startDate: '2026-04-10', endDate: '2026-04-13', misId: 'lisi', status: 'approved', description: '弱干扰弹窗提醒，承接周末转化。' },
+  { id: 'sub3', activityName: '三亚亚龙湾度假季', positionType: 'sidebar', region: '海南', startDate: '2026-04-26', endDate: '2026-05-05', misId: 'wangwu', status: 'rejected', description: '同档期资源已满，建议调整时间。' },
 ];
 
-const materialCards = [
-  { level: 'S级', title: 'S级活动物料模板', desc: '重大活动，全渠道推广', tag: 'bg-red-50 text-red-700 border-red-100' },
-  { level: 'A级', title: 'A级活动物料模板', desc: '重点活动，多资源位支持', tag: 'bg-orange-50 text-orange-700 border-orange-100' },
-  { level: 'B级', title: 'B级活动物料模板', desc: '常规活动，基础资源支持', tag: 'bg-green-50 text-green-700 border-green-100' },
-];
+const weekdays = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
+
+function typeStyle(type: PositionType) {
+  return positions.find((item) => item.key === type) ?? positions[0];
+}
+
+function dateKey(date: Date) {
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+}
+
+function schedulesForDay(schedules: Schedule[], date: Date) {
+  const key = dateKey(date);
+  return schedules.filter((item) => item.startDate <= key && item.endDate >= key);
+}
 
 export default function App() {
-  const [role, setRole] = useState<Role>('business');
-  const [tab, setTab] = useState<MainTab>('marketing');
-  const [passwordFor, setPasswordFor] = useState<Role | null>(null);
-  const [toolboxOpen, setToolboxOpen] = useState(false);
-  const [submitOpen, setSubmitOpen] = useState(false);
-  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [tab, setTab] = useState<Tab>('calendar');
+  const [month, setMonth] = useState(new Date(2026, 3, 1));
+  const [schedules] = useState(seedSchedules);
+  const [submissions, setSubmissions] = useState(seedSubmissions);
+  const [admin, setAdmin] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
 
-  const requestRole = (nextRole: Role) => {
-    if (nextRole === 'business') {
-      setRole('business');
-      setTab('marketing');
-      return;
-    }
-    setPasswordFor(nextRole);
-  };
+  const selectedSchedules = useMemo(() => (selectedDate ? schedulesForDay(schedules, selectedDate) : []), [selectedDate, schedules]);
 
   return (
-    <div className="min-h-screen bg-[#F5F6FA] text-[#101828]">
-      <header className="bg-[#1A2B4A] shadow-md">
-        <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-6">
+    <div className="min-h-screen bg-white text-gray-900">
+      <header className="sticky top-0 z-40 border-b border-[#F5D5E0] bg-white shadow-sm">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3">
           <div className="flex items-center gap-3">
-            <h1 className="text-[18px] font-bold tracking-wide text-white">点评景点营销平台</h1>
-            <button
-              onClick={() => setToolboxOpen(true)}
-              className="flex items-center gap-1.5 rounded-lg border border-white/20 px-3 py-1.5 text-xs text-white/80 transition-colors hover:bg-white/10 hover:text-white"
-            >
-              <Wrench className="h-3.5 w-3.5" />
-              运营工具箱
-            </button>
+            <div className="grid h-8 w-8 place-items-center rounded-lg bg-[#E57895]">
+              <Calendar className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <h1 className="text-lg font-bold text-gray-900">景点频道页资源位排期</h1>
+              <p className="text-xs text-gray-500">可视化排期管理系统</p>
+            </div>
           </div>
-          <div className="flex items-center gap-1 rounded-lg bg-white/10 p-1">
-            {[
-              ['business', '业务侧'],
-              ['approval', '审批侧'],
-              ['operation', '运营侧'],
-            ].map(([key, label]) => (
-              <button
-                key={key}
-                onClick={() => requestRole(key as Role)}
-                className={`rounded-md px-3 py-1 text-xs font-semibold transition-colors ${
-                  role === key ? 'bg-white text-[#1A2B4A] shadow-sm' : 'text-white/70 hover:bg-white/10 hover:text-white'
-                }`}
-              >
-                {label}
+          {admin ? (
+            <div className="flex items-center gap-2">
+              <span className="flex items-center gap-1 rounded-full bg-[#FFF0F4] px-3 py-1.5 text-sm font-medium text-[#D45F7A]">
+                <ShieldCheck className="h-4 w-4" />
+                管理员模式
+              </span>
+              <button onClick={() => setAdmin(false)} className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100">
+                <LogOut className="h-4 w-4" />
+                退出
               </button>
-            ))}
-          </div>
+            </div>
+          ) : (
+            <button onClick={() => setLoginOpen(true)} className="flex items-center gap-1 rounded-lg px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-100">
+              <LogIn className="h-4 w-4" />
+              管理员登录
+            </button>
+          )}
         </div>
+        <nav className="mx-auto flex max-w-7xl gap-1 px-4">
+          <NavButton active={tab === 'calendar'} onClick={() => setTab('calendar')} icon={<Calendar className="h-4 w-4" />}>排期日历</NavButton>
+          {!admin && <NavButton active={tab === 'submit'} onClick={() => setTab('submit')} icon={<Plus className="h-4 w-4" />}>排期提报</NavButton>}
+          <NavButton active={tab === 'submissions'} onClick={() => setTab('submissions')} icon={<ClipboardList className="h-4 w-4" />}>提报清单</NavButton>
+          <NavButton active={tab === 'guide'} onClick={() => setTab('guide')} icon={<BookOpen className="h-4 w-4" />}>配置指南</NavButton>
+        </nav>
       </header>
 
-      <div className="mx-auto max-w-5xl px-6 py-6">
-        <div className="mb-4 rounded-lg border border-gray-100 bg-white px-6 shadow-sm">
-          <nav className="flex gap-6">
-            <TopTab active={tab === 'marketing'} icon={<FileText className="h-4 w-4" />} onClick={() => setTab('marketing')}>
-              营销活动
-            </TopTab>
-            <TopTab active={tab === 'progress'} icon={<Clock className="h-4 w-4" />} onClick={() => setTab('progress')}>
-              活动进展
-            </TopTab>
-          </nav>
-        </div>
+      <main className="mx-auto max-w-7xl px-4 py-6">
+        {tab === 'calendar' && <CalendarPanel month={month} setMonth={setMonth} schedules={schedules} admin={admin} onDay={setSelectedDate} />}
+        {tab === 'submit' && <SubmitPanel onSubmit={(item) => { setSubmissions([{ ...item, id: `sub-${Date.now()}`, status: 'pending' }, ...submissions]); setTab('submissions'); }} />}
+        {tab === 'submissions' && <SubmissionPanel submissions={submissions} admin={admin} setSubmissions={setSubmissions} />}
+        {tab === 'guide' && <GuidePanel />}
+      </main>
 
-        <div className="overflow-hidden rounded-lg border border-gray-100 bg-white shadow-sm">
-          {role === 'business' && tab === 'marketing' && <BusinessMarketing onSubmit={() => setSubmitOpen(true)} />}
-          {role === 'business' && tab === 'progress' && <ProgressView activities={[]} />}
-          {role === 'approval' && <ApprovalView />}
-          {role === 'operation' && <OperationView />}
-        </div>
-      </div>
-
-      <button
-        onClick={() => setFeedbackOpen(true)}
-        className="fixed bottom-6 right-6 z-40 flex items-center gap-2 rounded-full bg-[#1A2B4A] px-4 py-2.5 text-sm font-medium text-white shadow-lg transition-all hover:scale-105"
-      >
-        <MessageSquare className="h-4 w-4" />
-        意见反馈
-      </button>
-
-      {passwordFor && (
-        <PasswordDialog
-          title={passwordFor === 'approval' ? '进入审批侧' : '进入运营侧'}
-          onClose={() => setPasswordFor(null)}
-          onSuccess={() => {
-            setRole(passwordFor);
-            setTab('progress');
-            setPasswordFor(null);
-          }}
-        />
-      )}
-      {toolboxOpen && <ToolboxDialog onClose={() => setToolboxOpen(false)} />}
-      {submitOpen && <SubmitDialog onClose={() => setSubmitOpen(false)} />}
-      {feedbackOpen && <FeedbackDialog onClose={() => setFeedbackOpen(false)} />}
+      {selectedDate && <DayDialog date={selectedDate} schedules={selectedSchedules} onClose={() => setSelectedDate(null)} />}
+      {loginOpen && <LoginDialog onClose={() => setLoginOpen(false)} onSuccess={() => { setAdmin(true); setLoginOpen(false); }} />}
     </div>
   );
 }
 
-function TopTab({ active, icon, children, onClick }: { active: boolean; icon: ReactNode; children: ReactNode; onClick: () => void }) {
+function NavButton({ active, icon, children, onClick }: { active: boolean; icon: ReactNode; children: ReactNode; onClick: () => void }) {
   return (
-    <button
-      onClick={onClick}
-      className={`flex items-center gap-1.5 border-b-2 py-3.5 text-sm font-medium transition-colors ${
-        active ? 'border-[#1A2B4A] text-[#1A2B4A]' : 'border-transparent text-gray-500 hover:text-gray-700'
-      }`}
-    >
+    <button onClick={onClick} className={`flex items-center gap-1.5 border-b-2 px-4 py-2.5 text-sm font-medium transition-colors ${active ? 'border-[#E57895] text-[#D45F7A]' : 'border-transparent text-gray-500 hover:text-gray-700'}`}>
       {icon}
       {children}
     </button>
   );
 }
 
-function BusinessMarketing({ onSubmit }: { onSubmit: () => void }) {
-  return (
-    <div className="mx-auto max-w-3xl space-y-4 px-6 py-6">
-      <Panel className="p-5 text-center">
-        <a className="inline-flex items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 px-4 py-2 text-sm font-medium text-blue-600 transition-colors hover:text-blue-800">
-          <FileText className="h-4 w-4" />
-          点评资源位介绍
-          <ExternalLink className="h-4 w-4" />
-        </a>
-      </Panel>
+function CalendarPanel({ month, setMonth, schedules, admin, onDay }: { month: Date; setMonth: (date: Date) => void; schedules: Schedule[]; admin: boolean; onDay: (date: Date) => void }) {
+  const [filter, setFilter] = useState<PositionType | 'all'>('all');
+  const year = month.getFullYear();
+  const monthIndex = month.getMonth();
+  const days = new Date(year, monthIndex + 1, 0).getDate();
+  const firstDay = new Date(year, monthIndex, 1).getDay();
+  const cells = [...Array(firstDay).fill(null), ...Array.from({ length: days }, (_, index) => index + 1)];
 
-      <Panel className="p-6">
-        <div className="mb-5 flex items-center justify-center">
-          <Lightbulb className="mr-1.5 h-4 w-4 text-yellow-500" />
-          <h3 className="text-[14px] font-semibold text-gray-700">景点营销活动全流程</h3>
+  return (
+    <section className="overflow-hidden rounded-2xl border border-[#F5D5E0] bg-white shadow-sm">
+      <div className="flex items-center justify-between border-b border-[#F5D5E0] px-6 py-4">
+        <div className="flex items-center gap-3">
+          <button onClick={() => setMonth(new Date(year, monthIndex - 1, 1))} className="rounded-lg p-1.5 hover:bg-gray-100"><ChevronLeft className="h-5 w-5" /></button>
+          <h2 className="text-xl font-bold">{month.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long' })}</h2>
+          <button onClick={() => setMonth(new Date(year, monthIndex + 1, 1))} className="rounded-lg p-1.5 hover:bg-gray-100"><ChevronRight className="h-5 w-5" /></button>
         </div>
-        <div className="flex w-full items-start">
-          {processSteps.map((step, index) => {
-            const Icon = step.icon;
-            return (
-              <div key={step.label} className="contents">
-                <div className="flex min-w-0 flex-1 flex-col items-center text-center">
-                  <div className={`mb-2 flex h-10 w-10 shrink-0 items-center justify-center rounded-full shadow-sm ${step.bg} ${step.color}`}>
-                    <Icon className="h-5 w-5" />
-                  </div>
-                  <span className="whitespace-nowrap text-[11px] font-semibold leading-tight text-gray-800">{step.label}</span>
-                </div>
-                {index < processSteps.length - 1 && (
-                  <div className="flex w-4 shrink-0 justify-center pt-3 text-base font-light leading-none text-gray-300">›</div>
-                )}
+        <div className="hidden items-center gap-3 md:flex">
+          {positions.map((item) => <span key={item.key} className="flex items-center gap-1.5 text-xs text-gray-600"><span className={`h-2.5 w-2.5 rounded-full ${item.dot}`} />{item.label}</span>)}
+          {admin && <button className="rounded-lg bg-[#E57895] px-3 py-1.5 text-sm font-medium text-white">添加排期</button>}
+        </div>
+      </div>
+      <div className="flex flex-wrap gap-2 border-b border-[#F5D5E0] px-6 py-3">
+        <FilterButton active={filter === 'all'} onClick={() => setFilter('all')}>全部</FilterButton>
+        {positions.map((item) => <FilterButton key={item.key} active={filter === item.key} onClick={() => setFilter(item.key)}>{item.label}</FilterButton>)}
+      </div>
+      <div className="grid grid-cols-7 border-b border-[#F5D5E0]">
+        {weekdays.map((day) => <div key={day} className="py-3 text-center text-xs font-semibold text-gray-500">{day}</div>)}
+      </div>
+      <div className="grid grid-cols-7">
+        {cells.map((day, index) => {
+          if (!day) return <div key={`empty-${index}`} className="min-h-[100px] border-b border-r border-[#FAE8EF]" />;
+          const date = new Date(year, monthIndex, day);
+          const list = schedulesForDay(schedules, date).filter((item) => filter === 'all' || item.positionType === filter);
+          return (
+            <button key={day} onClick={() => onDay(date)} className="min-h-[100px] border-b border-r border-[#F5D5E0] bg-white p-1.5 text-left transition-colors hover:bg-[#FFF0F4]/60">
+              <span className="mb-1 flex h-6 w-6 items-center justify-center rounded-full text-sm font-medium text-gray-700">{day}</span>
+              <div className="space-y-0.5">
+                {list.slice(0, 3).map((item) => {
+                  const style = typeStyle(item.positionType);
+                  return <div key={item.id} className={`truncate rounded px-1.5 py-0.5 text-xs font-medium ${style.bg} ${style.text}`}><span className={`mr-1 inline-block h-1.5 w-1.5 rounded-full ${style.dot}`} />{item.activityName} ({item.region})</div>;
+                })}
+                {list.length > 3 && <div className="px-1.5 text-xs text-gray-400">+{list.length - 3} 更多</div>}
               </div>
-            );
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
+
+function FilterButton({ active, children, onClick }: { active: boolean; children: ReactNode; onClick: () => void }) {
+  return <button onClick={onClick} className={`rounded-full px-4 py-1.5 text-sm font-medium ${active ? 'bg-[#E57895] text-white' : 'bg-gray-100 text-gray-500 hover:bg-gray-200'}`}>{children}</button>;
+}
+
+function DayDialog({ date, schedules, onClose }: { date: Date; schedules: Schedule[]; onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+      <div className="max-h-[80vh] w-full max-w-lg overflow-hidden rounded-2xl bg-white shadow-xl">
+        <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
+          <div>
+            <h2 className="font-semibold">{date.toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric', weekday: 'long' })}</h2>
+            <p className="text-xs text-gray-500">共 {schedules.length} 个排期</p>
+          </div>
+          <button onClick={onClose}><X className="h-5 w-5 text-gray-400" /></button>
+        </div>
+        <div className="space-y-3 overflow-y-auto p-6">
+          {schedules.length === 0 ? <div className="py-12 text-center text-gray-400">当天暂无排期</div> : schedules.map((item) => {
+            const style = typeStyle(item.positionType);
+            return <div key={item.id} className={`rounded-xl border p-3 ${style.bg} ${style.border}`}><p className={`text-sm font-medium ${style.text}`}>{item.activityName}</p><p className="mt-1 text-xs text-gray-500">{item.region} · {item.startDate} - {item.endDate}</p>{item.remark && <p className="mt-1 text-xs text-gray-400">备注：{item.remark}</p>}</div>;
           })}
         </div>
-      </Panel>
-
-      <Panel className="p-6 text-center">
-        <h2 className="mb-5 text-[20px] font-bold text-gray-900">活动提报</h2>
-        <div className="mb-4 flex flex-col items-center">
-          <label className="mb-1 text-sm font-medium text-gray-700">您的 MIS 号</label>
-          <div className="flex items-center gap-2 rounded-lg border border-green-200 bg-green-50 px-3 py-2">
-            <CheckCircle2 className="h-4 w-4 shrink-0 text-green-500" />
-            <span className="text-sm text-green-700">
-              已自动识别：<span className="font-semibold">demo</span>
-            </span>
-            <button className="ml-auto text-xs text-gray-400 hover:text-gray-600">更改</button>
-          </div>
-        </div>
-        <button
-          onClick={onSubmit}
-          className="inline-flex items-center gap-2 rounded-lg bg-blue-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-blue-700"
-        >
-          <FileText className="h-4 w-4" />
-          开始提报
-        </button>
-      </Panel>
-
-      <Panel className="p-6">
-        <div className="mb-4 text-center">
-          <h2 className="mb-1 text-[20px] font-bold text-gray-900">物料准备</h2>
-          <p className="text-[14px] text-gray-500">请于活动开始前 T-2 日将物料提交运营审核</p>
-        </div>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-          {materialCards.map((card) => (
-            <a key={card.level} className="block rounded-lg border border-gray-100 bg-gray-50 p-4 text-center transition-shadow hover:bg-white hover:shadow-sm">
-              <span className={`mb-2 inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold ${card.tag}`}>
-                {card.level}
-              </span>
-              <h3 className="mb-1 text-sm font-semibold text-gray-900">{card.title}</h3>
-              <p className="text-xs text-gray-500">{card.desc}</p>
-            </a>
-          ))}
-        </div>
-      </Panel>
-
-      <Panel className="p-6 text-center">
-        <h2 className="mb-1 text-[20px] font-bold text-gray-900">点位配置</h2>
-        <p className="mb-4 text-[14px] text-gray-500">
-          运营审核物料通过后，
-          <br />
-          业务方自行完成资源位配置
-        </p>
-        <a className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-blue-800">
-          <Settings className="h-4 w-4" />
-          资源位配置模板及SOP
-          <ExternalLink className="h-4 w-4" />
-        </a>
-      </Panel>
-
-      <Panel className="p-6 text-center">
-        <h2 className="mb-1 text-[20px] font-bold text-gray-900">活动上线</h2>
-        <div className="mb-3 mt-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-green-50">
-          <CircleCheckBig className="h-6 w-6 text-green-600" />
-        </div>
-        <p className="text-[14px] text-gray-500">完成资源位配置并提审后，由运营侧确认上线</p>
-      </Panel>
-    </div>
-  );
-}
-
-function ProgressView({ activities }: { activities: Activity[] }) {
-  return (
-    <div className="px-6 py-8">
-      <div className="mb-6 text-center">
-        <h2 className="mb-2 text-[20px] font-bold text-gray-900">活动进展</h2>
-        <p className="text-[14px] text-gray-500">查看您的活动当前状态和进度</p>
       </div>
-      <div className="mx-auto mb-6 grid max-w-2xl grid-cols-3 gap-4">
-        {['待审批', '待排期', '待上线'].map((status) => (
-          <div key={status} className="rounded-lg border border-gray-100 bg-gray-50 p-4 text-center">
-            <div className="mb-1 text-[22px] font-bold text-[#1A2B4A]">
-              {activities.filter((item) => item.status === status).length}
-            </div>
-            <p className="text-xs text-gray-500">{status}</p>
-          </div>
-        ))}
-      </div>
-      {activities.length === 0 ? (
-        <div className="py-12 text-center text-gray-400">暂无活动</div>
-      ) : (
-        <ActivityTable rows={activities} />
-      )}
     </div>
   );
 }
 
-function ApprovalView() {
+function SubmitPanel({ onSubmit }: { onSubmit: (item: Omit<Submission, 'id' | 'status'>) => void }) {
+  const [value, setValue] = useState<Omit<Submission, 'id' | 'status'>>({ activityName: '', positionType: 'top', region: '全国', startDate: '', endDate: '', misId: '', description: '' });
+  const update = (key: keyof typeof value, next: string) => setValue((current) => ({ ...current, [key]: next }));
   return (
-    <div className="px-6 py-8">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h2 className="text-[20px] font-bold text-gray-900">审批侧工作台</h2>
-          <p className="text-[14px] text-gray-500">审核业务提报并流转至运营排期</p>
-        </div>
-        <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-semibold text-blue-700">已登录</span>
-      </div>
-      <ActivityTable rows={activityRows.filter((row) => row.status === '待审批')} />
-    </div>
-  );
-}
-
-function OperationView() {
-  return (
-    <div className="px-6 py-8">
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h2 className="text-[20px] font-bold text-gray-900">运营侧工作台</h2>
-          <p className="text-[14px] text-gray-500">管理排期、物料审核和活动上线确认</p>
-        </div>
-        <button className="rounded-lg bg-[#1A2B4A] px-4 py-2 text-sm font-medium text-white">新建排期</button>
-      </div>
-      <ActivityTable rows={activityRows} />
-    </div>
-  );
-}
-
-function ActivityTable({ rows }: { rows: Activity[] }) {
-  return (
-    <div className="overflow-hidden rounded-lg border border-gray-100">
-      <table className="w-full text-left text-sm">
-        <thead className="bg-gray-50 text-xs font-semibold text-gray-500">
-          <tr>
-            <th className="px-4 py-3">活动名称</th>
-            <th className="px-4 py-3">等级</th>
-            <th className="px-4 py-3">负责人</th>
-            <th className="px-4 py-3">上线日期</th>
-            <th className="px-4 py-3">状态</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-100 bg-white">
-          {rows.map((row) => (
-            <tr key={row.id} className="hover:bg-gray-50/70">
-              <td className="px-4 py-3 font-medium text-gray-900">{row.name}</td>
-              <td className="px-4 py-3">
-                <span className="rounded-full bg-orange-50 px-2 py-0.5 text-xs font-semibold text-orange-700">{row.level}级</span>
-              </td>
-              <td className="px-4 py-3 text-gray-500">{row.owner}</td>
-              <td className="px-4 py-3 text-gray-500">{row.date}</td>
-              <td className="px-4 py-3 text-gray-500">{row.status}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function Panel({ children, className = '' }: { children: ReactNode; className?: string }) {
-  return <section className={`rounded-lg border border-gray-100 bg-white shadow-sm ${className}`}>{children}</section>;
-}
-
-function PasswordDialog({ title, onClose, onSuccess }: { title: string; onClose: () => void; onSuccess: () => void }) {
-  const [password, setPassword] = useState('');
-  const [show, setShow] = useState(false);
-  const [error, setError] = useState('');
-
-  return (
-    <Modal onClose={onClose}>
-      <form
-        className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl"
-        onSubmit={(event) => {
-          event.preventDefault();
-          if (password === '123') onSuccess();
-          else setError('密码错误');
-        }}
-      >
-        <div className="mb-5 flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-slate-100">
-            <Lock className="h-4 w-4 text-[#1A2B4A]" />
-          </div>
-          <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
-        </div>
-        <p className="mb-4 text-sm text-gray-500">请输入访问密码</p>
-        <div className="relative mb-2">
-          <input
-            autoFocus
-            type={show ? 'text' : 'password'}
-            value={password}
-            onChange={(event) => {
-              setPassword(event.target.value);
-              setError('');
-            }}
-            className="w-full rounded-lg border border-gray-300 px-4 py-2.5 pr-10 text-sm outline-none focus:border-transparent focus:ring-2 focus:ring-[#1A2B4A]"
-          />
-          <button type="button" onClick={() => setShow((value) => !value)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400">
-            {show ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-          </button>
-        </div>
-        {error && <p className="mb-3 text-xs text-red-500">{error}</p>}
-        <div className="flex gap-2 pt-2">
-          <button type="button" onClick={onClose} className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-600 hover:bg-gray-50">
-            取消
-          </button>
-          <button className="flex-1 rounded-lg bg-[#1A2B4A] px-4 py-2.5 text-sm font-medium text-white">确认</button>
-        </div>
+    <section className="mx-auto max-w-2xl rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
+      <Title title="排期提报" />
+      <form className="space-y-4" onSubmit={(event) => { event.preventDefault(); if (value.activityName && value.misId && value.startDate && value.endDate) onSubmit(value); }}>
+        <Field label="排期名称"><input className="field" value={value.activityName} onChange={(event) => update('activityName', event.target.value)} /></Field>
+        <Field label="资源位类型"><select className="field" value={value.positionType} onChange={(event) => update('positionType', event.target.value)}>{positions.map((item) => <option key={item.key} value={item.key}>{item.label}</option>)}</select></Field>
+        <div className="grid grid-cols-2 gap-3"><Field label="开始日期"><input className="field" type="date" value={value.startDate} onChange={(event) => update('startDate', event.target.value)} /></Field><Field label="结束日期"><input className="field" type="date" value={value.endDate} onChange={(event) => update('endDate', event.target.value)} /></Field></div>
+        <div className="grid grid-cols-2 gap-3"><Field label="投放地区"><input className="field" value={value.region} onChange={(event) => update('region', event.target.value)} /></Field><Field label="提报人 MIS"><input className="field" value={value.misId} onChange={(event) => update('misId', event.target.value)} /></Field></div>
+        <Field label="提报说明"><textarea className="field min-h-24 resize-none" value={value.description} onChange={(event) => update('description', event.target.value)} /></Field>
+        <button className="w-full rounded-lg bg-[#E57895] px-4 py-2.5 text-sm font-medium text-white hover:bg-[#D45F7A]">提交提报</button>
       </form>
-    </Modal>
+    </section>
   );
 }
 
-function ToolboxDialog({ onClose }: { onClose: () => void }) {
-  const items = [
-    ['资源位排期', Calendar],
-    ['提报审批', ListChecks],
-    ['数据看板', BarChart3],
-    ['物料归档', UploadCloud],
-  ] as const;
+function SubmissionPanel({ submissions, admin, setSubmissions }: { submissions: Submission[]; admin: boolean; setSubmissions: (items: Submission[]) => void }) {
+  const statusText = { pending: '待审核', approved: '已通过', rejected: '已拒绝' };
   return (
-    <Modal onClose={onClose}>
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-        <DialogTitle title="运营工具箱" onClose={onClose} />
-        <div className="grid grid-cols-2 gap-3">
-          {items.map(([label, Icon]) => (
-            <button key={label} className="rounded-xl border border-gray-100 p-4 text-left transition-colors hover:border-blue-200 hover:bg-blue-50">
-              <Icon className="mb-3 h-5 w-5 text-blue-600" />
-              <span className="text-sm font-medium text-gray-900">{label}</span>
-            </button>
-          ))}
-        </div>
+    <section className="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm">
+      <div className="border-b border-gray-100 px-6 py-4"><h2 className="text-lg font-bold">提报清单</h2><p className="text-sm text-gray-500">共 {submissions.length} 条提报</p></div>
+      <div className="divide-y divide-gray-50">
+        {submissions.map((item) => {
+          const style = typeStyle(item.positionType);
+          return <div key={item.id} className="flex items-start justify-between gap-4 px-6 py-4 hover:bg-gray-50/50"><div><div className="mb-1.5 flex gap-2"><span className={`rounded-full px-2 py-0.5 text-xs font-medium ${style.bg} ${style.text}`}>{style.label}</span><span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">{statusText[item.status]}</span></div><p className="text-sm font-semibold">{item.activityName}</p><p className="mt-1 text-xs text-gray-500">{item.region} · {item.startDate} - {item.endDate} · {item.misId}</p><p className="mt-1 text-xs text-gray-400">{item.description}</p></div>{admin && item.status === 'pending' && <div className="flex gap-2"><button onClick={() => setSubmissions(submissions.map((sub) => sub.id === item.id ? { ...sub, status: 'approved' } : sub))} className="rounded-lg bg-green-500 px-3 py-1.5 text-xs font-medium text-white">通过</button><button onClick={() => setSubmissions(submissions.map((sub) => sub.id === item.id ? { ...sub, status: 'rejected' } : sub))} className="rounded-lg bg-red-500 px-3 py-1.5 text-xs font-medium text-white">拒绝</button></div>}</div>;
+        })}
       </div>
-    </Modal>
+    </section>
   );
 }
 
-function SubmitDialog({ onClose }: { onClose: () => void }) {
-  return (
-    <Modal onClose={onClose}>
-      <div className="w-full max-w-lg rounded-2xl bg-white p-6 shadow-xl">
-        <DialogTitle title="活动提报" onClose={onClose} />
-        <div className="space-y-4">
-          <input className="field" placeholder="活动名称" />
-          <div className="grid grid-cols-2 gap-3">
-            <select className="field" defaultValue="S">
-              <option value="S">S级活动</option>
-              <option value="A">A级活动</option>
-              <option value="B">B级活动</option>
-            </select>
-            <input className="field" type="date" />
-          </div>
-          <textarea className="field min-h-24 resize-none" placeholder="活动背景、资源位诉求、目标城市等" />
-          <button onClick={onClose} className="w-full rounded-lg bg-blue-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-blue-700">
-            提交
-          </button>
-        </div>
-      </div>
-    </Modal>
-  );
+function GuidePanel() {
+  const links = ['侧边栏配置', '弹窗配置', '顶通配置', '中通配置', '弹窗 SOP', '侧边栏 SOP', '顶通 SOP', '中通 SOP', '数据看板'];
+  return <section className="mx-auto max-w-3xl space-y-5">{links.map((item) => <a key={item} className="flex items-center gap-3 rounded-xl border border-gray-100 bg-white p-4 shadow-sm hover:border-[#F5D5E0] hover:bg-[#FFF8FA]"><div className="grid h-9 w-9 place-items-center rounded-lg bg-[#FFF0F4] text-[#E57895]"><LinkIcon className="h-4 w-4" /></div><span className="flex-1 text-sm font-medium text-gray-700">{item}</span><ExternalLink className="h-3.5 w-3.5 text-gray-300" /></a>)}</section>;
 }
 
-function FeedbackDialog({ onClose }: { onClose: () => void }) {
-  return (
-    <Modal onClose={onClose}>
-      <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-xl">
-        <DialogTitle title="意见反馈" onClose={onClose} />
-        <textarea className="field min-h-28 resize-none" placeholder="请输入问题或建议" />
-        <button onClick={onClose} className="mt-4 w-full rounded-lg bg-[#1A2B4A] px-4 py-2.5 text-sm font-medium text-white">
-          提交反馈
-        </button>
-      </div>
-    </Modal>
-  );
+function LoginDialog({ onClose, onSuccess }: { onClose: () => void; onSuccess: () => void }) {
+  const [password, setPassword] = useState('');
+  return <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4"><form className="w-full max-w-sm rounded-2xl bg-white p-6 shadow-xl" onSubmit={(event) => { event.preventDefault(); if (password === '123') onSuccess(); }}><div className="mb-5 flex items-center justify-between"><h2 className="text-lg font-semibold">管理员验证</h2><button type="button" onClick={onClose}><X className="h-5 w-5 text-gray-400" /></button></div><input className="field mb-4" type="password" value={password} onChange={(event) => setPassword(event.target.value)} placeholder="请输入密码" autoFocus /><div className="flex gap-2"><button type="button" onClick={onClose} className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm text-gray-600">取消</button><button className="flex-1 rounded-lg bg-[#E57895] px-4 py-2.5 text-sm font-medium text-white">确认</button></div></form></div>;
 }
 
-function Modal({ children, onClose }: { children: ReactNode; onClose: () => void }) {
-  return (
-    <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/50 p-4" onMouseDown={onClose}>
-      <div onMouseDown={(event) => event.stopPropagation()}>{children}</div>
-    </div>
-  );
+function Field({ label, children }: { label: string; children: ReactNode }) {
+  return <label className="block"><span className="mb-1.5 block text-sm font-medium text-gray-700">{label}</span>{children}</label>;
 }
 
-function DialogTitle({ title, onClose }: { title: string; onClose: () => void }) {
-  return (
-    <div className="mb-5 flex items-center justify-between">
-      <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
-      <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
-        <X className="h-5 w-5" />
-      </button>
-    </div>
-  );
+function Title({ title }: { title: string }) {
+  return <div className="mb-5 flex items-center gap-2"><div className="h-5 w-1 rounded-full bg-[#E57895]" /><h2 className="text-base font-bold">{title}</h2></div>;
 }
