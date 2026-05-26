@@ -20,8 +20,6 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
-          cache-dependency-path: paichang-system/package-lock.json
 
       - name: Build 排期系统
         working-directory: paichang-system
@@ -29,16 +27,21 @@ jobs:
           npm ci
           npm run build
 
+      - name: Build 营销平台
+        working-directory: scenic-marketing-platform
+        run: |
+          npm ci
+          npm run build
+
       - name: Assemble deploy directory
         run: |
-          mkdir -p _deploy
-          # Root static files (exclude sub-projects)
-          cp index.html _deploy/ 2>/dev/null || true
-          cp 1on1.html _deploy/ 2>/dev/null || true
+          mkdir -p _deploy/paichang _deploy/scenic-marketing
+          # 排期系统 → 根路径
           cp -r paichang-system/dist/* _deploy/
-          # Also keep paichang as a sub-path
-          mkdir -p _deploy/paichang
+          # 排期系统 → /paichang/
           cp -r paichang-system/dist/* _deploy/paichang/
+          # 营销平台 → /scenic-marketing/
+          cp -r scenic-marketing-platform/dist/* _deploy/scenic-marketing/
 
       - uses: actions/configure-pages@v4
 
