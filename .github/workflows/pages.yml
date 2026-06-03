@@ -33,15 +33,23 @@ jobs:
           npm ci
           npm run build
 
+      - name: Build 雅思笔记本
+        working-directory: ielts-notebook
+        run: |
+          npm ci
+          npm run build
+
       - name: Assemble deploy directory
         run: |
-          mkdir -p _deploy/paichang _deploy/scenic-marketing
+          mkdir -p _deploy/paichang _deploy/scenic-marketing _deploy/ielts-notebook
           # 排期系统 → 根路径
           cp -r paichang-system/dist/* _deploy/
           # 排期系统 → /paichang/
           cp -r paichang-system/dist/* _deploy/paichang/
           # 营销平台 → /scenic-marketing/
           cp -r scenic-marketing-platform/dist/* _deploy/scenic-marketing/
+          # 雅思笔记本 → /ielts-notebook/
+          cp -r ielts-notebook/dist/* _deploy/ielts-notebook/
 
       - uses: actions/configure-pages@v4
 
