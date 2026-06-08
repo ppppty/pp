@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Brain, Copy, Sparkles, AlertCircle } from 'lucide-react'
-import { callDeepSeek, buildAnswerPrompt } from '@/lib/deepseek'
+import { callDeepSeek, buildAnswerPrompt, cleanAiResponse } from '@/lib/deepseek'
 import { db } from '@/lib/supabase'
 
 interface AIGeneratePanelProps {
@@ -25,14 +25,15 @@ export default function AIGeneratePanel({ questionId, question, part, onAnswerGe
 
     try {
       const prompt = buildAnswerPrompt(question, part, bandScore)
-      const answer = await callDeepSeek(prompt)
-      setResult(answer)
+      const raw = await callDeepSeek(prompt)
+      const cleaned = cleanAiResponse(raw)
+      setResult(cleaned)
 
-      // 如果有关联的题目 ID，保存 AI 答案
+      // 如果有关联的题目 ID，保存清理后的 AI 答案
       if (questionId) {
         const supabase = db()
-        await supabase.from('speaking_qa').update({ ai_answer: answer }).eq('id', questionId)
-        onAnswerGenerated?.(answer)
+        await supabase.from('speaking_qa').update({ ai_answer: cleaned }).eq('id', questionId)
+        onAnswerGenerated?.(cleaned)
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : '生成失败')
@@ -46,7 +47,7 @@ export default function AIGeneratePanel({ questionId, question, part, onAnswerGe
   }
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 overflow-hidden">
+    <div className="bg-white rounded-xl border border-slate-100 overflow-hidden">
       {/* Header */}
       <div className="px-5 py-3 bg-brand-50 border-b border-brand-100 flex items-center justify-between">
         <div className="flex items-center gap-2">
@@ -62,7 +63,7 @@ export default function AIGeneratePanel({ questionId, question, part, onAnswerGe
         {/* 题目预览 */}
         <div className="bg-slate-50 rounded-lg px-4 py-3">
           <p className="text-xs text-slate-400 mb-1">题目 (Part {part})</p>
-          <p className="text-sm text-slate-700">{question || '请先输入题目'}</p>
+          <p className="text-sm text-slate-600">{question || '请先输入题目'}</p>
         </div>
 
         {/* 分数选择 */}
@@ -74,7 +75,7 @@ export default function AIGeneratePanel({ questionId, question, part, onAnswerGe
               className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
                 bandScore === score
                   ? 'bg-brand-500 text-white'
-                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
               }`}
               onClick={() => setBandScore(score)}
             >
@@ -120,7 +121,7 @@ export default function AIGeneratePanel({ questionId, question, part, onAnswerGe
                 复制
               </button>
             </div>
-            <div className="prose prose-sm max-w-none bg-slate-50 rounded-lg p-4 whitespace-pre-wrap text-sm leading-relaxed text-slate-700">
+            <div className="prose prose-sm max-w-none bg-slate-50 rounded-lg p-4 whitespace-pre-wrap text-[1rem] leading-relaxed text-slate-600">
               {result}
             </div>
           </div>

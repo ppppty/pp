@@ -32,7 +32,7 @@ export interface TopicMaterial {
   updated_at: string
 }
 
-export type ExpressionType = 'vocabulary' | 'sentence_pattern' | 'connector' | 'idiom' | 'phrasal_verb'
+export type ExpressionType = 'word' | 'phrase' | 'connector'
 
 export interface Expression {
   id: string
@@ -67,17 +67,15 @@ export interface QuickNote {
 export type SpeakingQAInsert = Pick<SpeakingQA, 'part' | 'topic_tag' | 'question' | 'answer'> & { part: 1 | 2 | 3 }
 export type TopicMaterialInsert = Pick<TopicMaterial, 'title' | 'category' | 'content' | 'tags'>
 export type ExpressionInsert = Pick<Expression, 'expr_type' | 'term' | 'meaning' | 'notes'>
-export type PronunciationInsert = Pick<Pronunciation, 'word' | 'notes'>
+export type PronunciationInsert = Pick<Pronunciation, 'word' | 'phonetic' | 'notes'>
 export type QuickNoteInsert = Pick<QuickNote, 'content' | 'category'>
 
 // === 表达式类型标签映射 ===
 
 export const EXPRESSION_TYPE_LABELS: Record<ExpressionType, string> = {
-  vocabulary: '词汇积累',
-  sentence_pattern: '句型句式',
+  word: '单词',
+  phrase: '短语短句',
   connector: '连接词',
-  idiom: '习语/成语',
-  phrasal_verb: '短语动词',
 }
 
 export const EXPRESSION_TYPE_OPTIONS = Object.entries(EXPRESSION_TYPE_LABELS).map(([value, label]) => ({ value: value as ExpressionType, label }))

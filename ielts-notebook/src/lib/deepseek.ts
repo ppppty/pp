@@ -1,3 +1,11 @@
+/** 清除 AI 回复中的 Markdown 格式标记（** 加粗、* 列表符） */
+export function cleanAiResponse(text: string): string {
+  return text
+    .replace(/\*\*(.+?)\*\*/g, '$1')  // 移除 **bold** 标记
+    .replace(/^\* /gm, '- ')           // * 列表符转为 -
+    .replace(/^ {0,2}\* /gm, '- ')     // 缩进的 * 列表符
+}
+
 interface DeepSeekResponse {
   choices: Array<{
     message: {
@@ -6,18 +14,34 @@ interface DeepSeekResponse {
   }>
 }
 
-function getFunctionUrl(): string {
-  const url = localStorage.getItem('ielts_supabase_url') || ''
-  if (!url) throw new Error('Supabase URL 未配置')
-  return `${url}/functions/v1/deepseek-proxy`
+let cachedUrl: string | null = null
+let cachedAnon: string | null = null
+
+function getCredentials() {
+  if (!cachedUrl) {
+    cachedUrl = localStorage.getItem('ielts_supabase_url') || ''
+  }
+  if (!cachedAnon) {
+    cachedAnon = localStorage.getItem('ielts_supabase_anon') || ''
+  }
+  return { url: cachedUrl, anon: cachedAnon }
+}
+
+export function clearDeepSeekCache() {
+  cachedUrl = null
+  cachedAnon = null
 }
 
 export async function callDeepSeek(prompt: string): Promise<string> {
-  const fnUrl = getFunctionUrl()
+  const { url, anon } = getCredentials()
+  if (!url) throw new Error('Supabase URL 未配置')
 
-  const response = await fetch(fnUrl, {
+  const response = await fetch(`${url}/functions/v1/deepseek-proxy`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${anon}`,
+    },
     body: JSON.stringify({ prompt }),
   })
 

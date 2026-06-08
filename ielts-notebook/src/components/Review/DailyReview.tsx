@@ -6,66 +6,75 @@ import {
   Volume2,
   Library,
 } from 'lucide-react'
-import { useSupabaseQuery } from '@/hooks/useSupabaseQuery'
-import type { SpeakingQA, Expression, Pronunciation, TopicMaterial } from '@/types'
+import { useSupabaseCount } from '@/hooks/useSupabaseQuery'
 
 export default function DailyReview() {
   const navigate = useNavigate()
-  const { data: questions } = useSupabaseQuery<SpeakingQA>('speaking_qa')
-  const { data: expressions } = useSupabaseQuery<Expression>('expressions')
-  const { data: words } = useSupabaseQuery<Pronunciation>('pronunciation')
-  const { data: topics } = useSupabaseQuery<TopicMaterial>('topic_materials')
+  const { count: questionCount, loading: qLoading } = useSupabaseCount('speaking_qa')
+  const { count: expressionCount, loading: eLoading } = useSupabaseCount('expressions')
+  const { count: wordCount, loading: wLoading } = useSupabaseCount('pronunciation')
+  const { count: topicCount, loading: tLoading } = useSupabaseCount('topic_materials')
+  const isLoading = qLoading || eLoading || wLoading || tLoading
 
   const statCards = [
     {
       label: '串题',
-      value: questions.length,
+      value: questionCount,
       icon: MessageSquare,
-      color: 'text-blue-600 bg-blue-50',
+      color: 'text-slate-400 bg-slate-50',
       onClick: () => navigate('/speaking'),
     },
     {
-      label: '素材库',
-      value: topics.length,
+      label: '主题素材',
+      value: topicCount,
       icon: Library,
-      color: 'text-emerald-600 bg-emerald-50',
+      color: 'text-brand-500 bg-brand-50',
       onClick: () => navigate('/topics'),
     },
     {
-      label: '表达库',
-      value: expressions.length,
+      label: '词汇表达',
+      value: expressionCount,
       icon: Sparkles,
-      color: 'text-purple-600 bg-purple-50',
+      color: 'text-brand-400 bg-brand-50',
       onClick: () => navigate('/expressions'),
     },
     {
       label: '发音本',
-      value: words.length,
+      value: wordCount,
       icon: Volume2,
-      color: 'text-amber-600 bg-amber-50',
+      color: 'text-slate-400 bg-slate-50',
       onClick: () => navigate('/pronunciation'),
     },
   ]
 
   return (
     <div className="space-y-6">
-      <h2 className="text-lg font-semibold text-slate-800 flex items-center gap-2">
-        <LayoutDashboard size={20} />
+      <h2 className="text-xl font-bold text-slate-900 flex items-center gap-2">
+        <LayoutDashboard size={22} />
         仪表盘
       </h2>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {statCards.map(card => (
           <div
             key={card.label}
             className="card cursor-pointer"
             onClick={card.onClick}
           >
-            <div className={`w-9 h-9 rounded-lg flex items-center justify-center mb-2 ${card.color}`}>
-              <card.icon size={18} />
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center mb-3 ${card.color}`}>
+              <card.icon size={20} />
             </div>
-            <p className="text-2xl font-bold text-slate-800">{card.value}</p>
-            <p className="text-xs text-slate-500">{card.label}</p>
+            {isLoading ? (
+              <div className="space-y-2">
+                <div className="h-8 w-12 bg-slate-100 rounded animate-pulse" />
+                <div className="h-3 w-10 bg-slate-100 rounded animate-pulse" />
+              </div>
+            ) : (
+              <>
+                <p className="text-3xl font-bold text-slate-900">{card.value}</p>
+                <p className="text-sm text-slate-400 font-medium">{card.label}</p>
+              </>
+            )}
           </div>
         ))}
       </div>

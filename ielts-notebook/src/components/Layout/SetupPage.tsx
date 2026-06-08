@@ -33,13 +33,13 @@ export default function SetupPage({ onConfigured }: SetupPageProps) {
         if (testError.message?.includes('relation') || testError.code === '42P01') {
           // 表还没建，但连接成功了
           setSuccess(true)
-          setTimeout(() => onConfigured(), 800)
+          setTimeout(() => onConfigured(), 2000)
           return
         }
         throw testError
       }
       setSuccess(true)
-      setTimeout(() => onConfigured(), 800)
+      setTimeout(() => onConfigured(), 2000)
     } catch (err) {
       setError(err instanceof Error ? err.message : '连接失败，请检查 URL 和 Key')
     } finally {
@@ -54,10 +54,10 @@ export default function SetupPage({ onConfigured }: SetupPageProps) {
           <div className="w-16 h-16 bg-brand-100 rounded-2xl flex items-center justify-center mx-auto mb-4">
             <Database size={28} className="text-brand-600" />
           </div>
-          <h1 className="text-2xl font-bold text-slate-800 mb-2">
+          <h1 className="text-2xl font-bold text-slate-900 mb-2">
             {isConfigured ? '更新 Supabase 配置' : '欢迎使用雅思口语笔记本'}
           </h1>
-          <p className="text-slate-500 text-sm">
+          <p className="text-slate-600 text-sm">
             请配置 Supabase 数据库连接。
           </p>
         </div>
@@ -92,9 +92,14 @@ export default function SetupPage({ onConfigured }: SetupPageProps) {
           )}
 
           {success && (
-            <div className="text-sm text-green-600 bg-green-50 rounded-lg px-4 py-3 flex items-center gap-2">
-              <CheckCircle size={16} />
-              连接成功！
+            <div className="text-sm text-green-600 bg-green-50 rounded-lg px-4 py-3 space-y-2">
+              <div className="flex items-center gap-2">
+                <CheckCircle size={16} />
+                连接成功！即将自动跳转...
+              </div>
+              <button className="btn btn-primary btn-sm w-full justify-center" onClick={() => onConfigured()}>
+                进入应用
+              </button>
             </div>
           )}
 
@@ -107,9 +112,9 @@ export default function SetupPage({ onConfigured }: SetupPageProps) {
           </button>
         </div>
 
-        <div className="mt-8 p-4 bg-slate-100 rounded-lg">
-          <h3 className="text-sm font-medium text-slate-700 mb-2">设置步骤：</h3>
-          <ol className="text-xs text-slate-500 space-y-1 list-decimal list-inside">
+        <div className="mt-8 p-4 bg-slate-50 rounded-lg">
+          <h3 className="text-sm font-medium text-slate-600 mb-2">设置步骤：</h3>
+          <ol className="text-xs text-slate-600 space-y-1 list-decimal list-inside">
             <li>在 supabase.com 创建免费项目</li>
             <li>Settings → API：复制 Project URL 和 anon key</li>
             <li>粘贴到上方并点击连接</li>

@@ -53,11 +53,13 @@ async function fetchFromAPI(word: string): Promise<PhoneticResult | null> {
     if (!data?.length) return null
 
     const phonetics = data[0].phonetics || []
-    const texts = phonetics.filter(p => p.text).map(p => p.text!)
 
-    // 通常第1个是UK，第2个是US；如果只有一个则复用
-    const uk = texts[0] || data[0].phonetic || ''
-    const us = texts[1] || texts[0] || data[0].phonetic || ''
+    // 通过 audio URL 判断 UK/US 区域，比依赖数组顺序更可靠
+    const ukEntry = phonetics.find(p => p.audio?.includes('-uk')) || phonetics.find(p => p.text)
+    const usEntry = phonetics.find(p => p.audio?.includes('-us')) || (ukEntry ? phonetics.find(p => p !== ukEntry && p.text) : null)
+
+    const uk = ukEntry?.text || data[0].phonetic || ''
+    const us = usEntry?.text || ukEntry?.text || data[0].phonetic || ''
 
     return { uk, us }
   } catch {

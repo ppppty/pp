@@ -59,12 +59,12 @@ export default function Part2Timer() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Clock size={18} className="text-brand-500" />
-          <span className="font-medium text-slate-700">Part 2 计时训练</span>
+          <span className="font-medium text-slate-600">Part 2 计时训练</span>
           {phase !== 'idle' && (
             <span className={`text-xs px-2 py-0.5 rounded-full ${
               phase === 'prep' ? 'bg-amber-100 text-amber-700' :
               phase === 'speaking' ? 'bg-green-100 text-green-700' :
-              'bg-slate-100 text-slate-600'
+              'bg-slate-50 text-slate-600'
             }`}>
               {phase === 'prep' ? '准备阶段' : phase === 'speaking' ? '陈述阶段' : '完成'}
             </span>
@@ -98,7 +98,7 @@ export default function Part2Timer() {
         <div className={`mt-4 text-center py-6 rounded-xl ${
           phase === 'prep' ? 'bg-amber-50' : 'bg-green-50'
         }`}>
-          <p className="text-xs text-slate-500 mb-1">
+          <p className="text-xs text-slate-600 mb-1">
             {phase === 'prep' ? '准备时间 — 写下关键词' : '开始陈述'}
           </p>
           <p className={`text-5xl font-bold font-mono tracking-wider ${
@@ -122,7 +122,7 @@ export default function Part2Timer() {
 
       {phase === 'done' && (
         <div className="mt-4 text-center py-6 rounded-xl bg-slate-50">
-          <p className="text-slate-500">练习完成！复盘一下你的表现</p>
+          <p className="text-slate-600">练习完成！复盘一下你的表现</p>
         </div>
       )}
     </div>

@@ -29,8 +29,7 @@ interface SelectionState {
   source: 'answer' | 'ai_answer'
 }
 
-let idCounter = 0
-function nextKey() { return `qa_${++idCounter}` }
+function nextKey() { return crypto.randomUUID() }
 
 export default function SpeakingList({ searchQuery = '' }: SpeakingListProps) {
   const { data: questions, loading, refetch } = useSupabaseQuery<SpeakingQA>('speaking_qa')
@@ -79,7 +78,7 @@ export default function SpeakingList({ searchQuery = '' }: SpeakingListProps) {
   })
 
   const grouped = useMemo(() => {
-    const shouldGroup = filterPart === 1 || filterPart === 3
+    const shouldGroup = filterPart !== null
     if (!shouldGroup) return null
 
     const groups: Record<string, SpeakingQA[]> = {}
@@ -102,7 +101,7 @@ export default function SpeakingList({ searchQuery = '' }: SpeakingListProps) {
     return { groups: groupsArr, ungrouped }
   }, [filtered, filterPart])
 
-  const shouldGroup = filterPart === 1 || filterPart === 3
+  const shouldGroup = filterPart !== null
 
   const resetForm = () => {
     setForm({
@@ -243,20 +242,30 @@ export default function SpeakingList({ searchQuery = '' }: SpeakingListProps) {
 
     const existing = annotationsByQ[q.id] || q.annotations || []
     const updated = [...existing, annotation]
+    const prevLocal = { ...annotationsByQ }
+
     // 立即更新本地状态（页面不刷新）
     setAnnotationsByQ(prev => ({ ...prev, [q.id]: updated }))
     setSelection(null)
     setCommentInput('')
     setCommentingId(null)
 
-    // 后台异步保存到数据库
-    db().from('speaking_qa').update({
-      annotations: updated,
-      updated_at: new Date().toISOString(),
-    }).eq('id', q.id).then(() => {
-      // 静默同步，不触发 refresh
+    // 后台保存：先查当前 DB 值做合并，防止并发覆盖
+    db().from('speaking_qa').select('annotations').eq('id', q.id).single().then(({ data: row }: any) => {
+      const dbAnnotations: SpeakingAnnotation[] = row?.annotations || []
+      // 合并：以 id 去重，保留本地较新的（本地新增的 annotation id 不在 DB 中则加入）
+      const dbIds = new Set(dbAnnotations.map((a: SpeakingAnnotation) => a.id))
+      const merged = [...dbAnnotations, ...updated.filter(a => !dbIds.has(a.id))]
+      return db().from('speaking_qa').update({
+        annotations: merged,
+        updated_at: new Date().toISOString(),
+      }).eq('id', q.id)
+    }).then((res: any) => {
+      if (res?.error) throw res.error
     }).catch((err: Error) => {
       console.error('保存注释失败:', err)
+      setAnnotationsByQ(prevLocal)
+      alert('标注保存失败，已撤销更改')
     })
   }
 
@@ -264,7 +273,7 @@ export default function SpeakingList({ searchQuery = '' }: SpeakingListProps) {
     if (!selection) return
     try {
       await db().from('expressions').insert({
-        expr_type: 'vocabulary',
+        expr_type: 'word',
         term: selection.text,
         meaning: '',
         notes: '',
@@ -285,15 +294,23 @@ export default function SpeakingList({ searchQuery = '' }: SpeakingListProps) {
   const handleDeleteAnnotation = async (questionId: string, annotId: string) => {
     const q = questions.find(qq => qq.id === questionId)
     if (!q) return
-    const annotations = getAnnotations(q).filter(a => a.id !== annotId)
+    const original = getAnnotations(q)
+    const filtered = original.filter(a => a.id !== annotId)
     // 立即更新本地
-    setAnnotationsByQ(prev => ({ ...prev, [questionId]: annotations }))
-    // 后台保存
-    db().from('speaking_qa').update({
-      annotations,
-      updated_at: new Date().toISOString(),
-    }).eq('id', questionId).catch((err: Error) => {
+    setAnnotationsByQ(prev => ({ ...prev, [questionId]: filtered }))
+    // 后台保存：先查 DB 当前值再删除，防止并发覆盖
+    db().from('speaking_qa').select('annotations').eq('id', questionId).single().then(({ data: row }: any) => {
+      const dbAnnotations: SpeakingAnnotation[] = row?.annotations || []
+      const merged = dbAnnotations.filter(a => a.id !== annotId)
+      return db().from('speaking_qa').update({
+        annotations: merged,
+        updated_at: new Date().toISOString(),
+      }).eq('id', questionId)
+    }).then((res: any) => {
+      if (res?.error) throw res.error
+    }).catch((err: Error) => {
       console.error('删除注释失败:', err)
+      setAnnotationsByQ(prev => ({ ...prev, [questionId]: original }))
     })
   }
 
@@ -305,7 +322,9 @@ export default function SpeakingList({ searchQuery = '' }: SpeakingListProps) {
     const sorted = [...annotations].sort((a, b) => {
       const ia = text.indexOf(a.selected_text)
       const ib = text.indexOf(b.selected_text)
-      return ia - ib
+      if (ia !== ib) return ia - ib
+      // 相同文本用创建时间做稳定排序
+      return (a.created_at || '').localeCompare(b.created_at || '')
     })
 
     const parts: Array<{ type: 'text' | 'mark'; content: string; annot?: SpeakingAnnotation }> = []
@@ -332,7 +351,7 @@ export default function SpeakingList({ searchQuery = '' }: SpeakingListProps) {
           p.type === 'mark' && p.annot ? (
             <mark
               key={i}
-              className="bg-amber-200/60 text-slate-800 rounded-sm cursor-help relative group/mark"
+              className="bg-amber-200/60 text-slate-900 rounded-sm cursor-help relative group/mark"
               title={p.annot.comment || '已标注'}
             >
               {p.content}
@@ -355,7 +374,7 @@ export default function SpeakingList({ searchQuery = '' }: SpeakingListProps) {
 
     return (
       <div
-        className="annotation-toolbar fixed z-50 bg-white border border-slate-200 rounded-lg shadow-lg px-2 py-1.5 flex items-center gap-1"
+        className="annotation-toolbar fixed z-50 bg-white border border-slate-100 rounded-lg shadow-lg px-2 py-1.5 flex items-center gap-1"
         style={{
           left: `${Math.max(selection.x - 80, 10)}px`,
           top: `${Math.max(selection.y - 44, 10)}px`,
@@ -383,19 +402,19 @@ export default function SpeakingList({ searchQuery = '' }: SpeakingListProps) {
             >
               <Highlighter size={12} /> 划线
             </button>
-            <span className="w-px h-4 bg-slate-200" />
+            <span className="w-px h-4 bg-slate-100" />
             <button
-              className="text-xs px-2 py-1 rounded hover:bg-slate-100 flex items-center gap-1 text-slate-600"
+              className="text-xs px-2 py-1 rounded hover:bg-slate-50 flex items-center gap-1 text-slate-600"
               onClick={() => setCommentingId(selection.questionId)}
             >
               <MessageSquare size={12} /> 评论
             </button>
-            <span className="w-px h-4 bg-slate-200" />
+            <span className="w-px h-4 bg-slate-100" />
             <button
               className="text-xs px-2 py-1 rounded hover:bg-brand-50 flex items-center gap-1 text-brand-600"
               onClick={handleAddToExpressions}
             >
-              <Bookmark size={12} /> 加入表达库
+              <Bookmark size={12} /> 加入词汇表达
             </button>
           </>
         )}
@@ -417,26 +436,24 @@ export default function SpeakingList({ searchQuery = '' }: SpeakingListProps) {
       >
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap mb-1">
-            {!shouldGroup && (
-              <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${
-                q.part === 1 ? 'bg-blue-100 text-blue-700' :
-                q.part === 2 ? 'bg-purple-100 text-purple-700' :
-                'bg-amber-100 text-amber-700'
-              }`}>
-                Part {q.part}
-              </span>
-            )}
+            <span className={`text-xs font-medium px-2 py-0.5 rounded-full whitespace-nowrap ${
+              q.part === 1 ? 'bg-slate-100 text-slate-600' :
+              q.part === 2 ? 'bg-purple-100 text-purple-700' :
+              'bg-amber-100 text-amber-700'
+            }`}>
+              Part {q.part}
+            </span>
             {q.topic_tag && (
-              <span className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded-full">
+              <span className="text-xs text-slate-600 bg-slate-50 px-2 py-0.5 rounded-full">
                 {q.topic_tag}
               </span>
             )}
           </div>
-          <p className="text-sm font-medium text-slate-800 line-clamp-2">
+          <p className="text-[1.0625rem] font-medium text-slate-900 line-clamp-2">
             {q.question}
           </p>
           {(!expandedId || expandedId !== q.id) && (
-            <p className="text-xs text-slate-400 mt-1 truncate">
+            <p className="text-[0.8125rem] text-slate-400 mt-1 truncate">
               {q.answer ? q.answer.slice(0, 80) + (q.answer.length > 80 ? '...' : '') : '暂无答案'}
             </p>
           )}
@@ -451,9 +468,9 @@ export default function SpeakingList({ searchQuery = '' }: SpeakingListProps) {
           {/* 你的答案 */}
           {q.answer && (
             <div>
-              <p className="text-xs font-medium text-slate-400 mb-1">你的答案</p>
+              <p className="text-[0.8125rem] font-medium text-slate-400 mb-1">你的答案</p>
               <div
-                className="text-sm text-slate-700 whitespace-pre-wrap leading-relaxed select-text"
+                className="bg-slate-50 rounded-lg p-3 text-[1rem] text-slate-600 whitespace-pre-wrap leading-relaxed select-text"
                 onMouseUp={(e) => handleTextSelect(e, q.id, 'answer')}
               >
                 {renderHighlighted(q.answer, getAnnotations(q))}
@@ -464,9 +481,9 @@ export default function SpeakingList({ searchQuery = '' }: SpeakingListProps) {
           {/* AI 答案 */}
           {q.ai_answer && (
             <div>
-              <p className="text-xs font-medium text-slate-400 mb-1">AI 参考答案</p>
+              <p className="text-[0.8125rem] font-medium text-slate-400 mb-1">AI 参考答案</p>
               <div
-                className="bg-slate-50 rounded-lg p-3 text-sm text-slate-700 whitespace-pre-wrap leading-relaxed select-text"
+                className="bg-slate-50 rounded-lg p-3 text-[1rem] text-slate-600 whitespace-pre-wrap leading-relaxed select-text"
                 onMouseUp={(e) => handleTextSelect(e, q.id, 'ai_answer')}
               >
                 {renderHighlighted(q.ai_answer, getAnnotations(q))}
@@ -482,7 +499,7 @@ export default function SpeakingList({ searchQuery = '' }: SpeakingListProps) {
                 <div key={a.id} className="flex items-center gap-2 text-xs bg-amber-50 rounded px-2 py-1">
                   <span className="font-medium text-amber-700">"{a.selected_text}"</span>
                   {a.comment && (
-                    <span className="text-slate-500">— {a.comment}</span>
+                    <span className="text-slate-600">— {a.comment}</span>
                   )}
                   <button
                     className="ml-auto text-slate-300 hover:text-red-400"
@@ -517,6 +534,7 @@ export default function SpeakingList({ searchQuery = '' }: SpeakingListProps) {
               question={q.question}
               part={q.part}
               onAnswerGenerated={() => refetch()}
+              onClose={() => setAiPanelId(null)}
             />
           )}
         </div>
@@ -532,21 +550,21 @@ export default function SpeakingList({ searchQuery = '' }: SpeakingListProps) {
       {exprAdded && (
         <div className="fixed bottom-6 right-6 z-50 bg-green-600 text-white text-sm px-4 py-2 rounded-lg shadow-lg">
           <Check size={14} className="inline mr-1" />
-          "{exprAdded}" 已加入表达库
+          "{exprAdded}" 已加入词汇表达
         </div>
       )}
 
       {/* Part 切换 Tab */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div className="flex items-center gap-2">
-          <div className="flex items-center gap-1 bg-slate-100 rounded-lg p-1">
+          <div className="flex items-center gap-1 bg-slate-50 rounded-lg p-1">
             {[{ value: null as number | null, label: '全部' }, ...PART_OPTIONS].map(opt => (
               <button
                 key={opt.value ?? 0}
-                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors whitespace-nowrap ${
                   filterPart === opt.value
                     ? 'bg-white text-brand-600 shadow-sm'
-                    : 'text-slate-600 hover:text-slate-800'
+                    : 'text-slate-600 hover:text-slate-900'
                 }`}
                 onClick={() => { setFilterPart(opt.value); setFilterTopic('') }}
               >
@@ -554,18 +572,16 @@ export default function SpeakingList({ searchQuery = '' }: SpeakingListProps) {
               </button>
             ))}
           </div>
-          {(filterPart === 1 || filterPart === 3) && existingTopics.length > 0 && (
-            <select
-              className="form-select w-auto text-sm"
-              value={filterTopic}
-              onChange={e => setFilterTopic(e.target.value)}
-            >
-              <option value="">全部 Topic</option>
-              {existingTopics.map(t => (
-                <option key={t} value={t}>{t}</option>
-              ))}
-            </select>
-          )}
+          <select
+            className={`form-select w-auto text-sm transition-opacity ${filterPart !== null && existingTopics.length > 0 ? '' : 'invisible'}`}
+            value={filterTopic}
+            onChange={e => setFilterTopic(e.target.value)}
+          >
+            <option value="">全部 Topic</option>
+            {filterPart !== null ? existingTopics.map(t => (
+              <option key={t} value={t}>{t}</option>
+            )) : null}
+          </select>
           {searchQuery && (
             <span className="text-xs text-slate-400">
               搜索: "{searchQuery}" ({filtered.length} 条结果)
@@ -582,7 +598,7 @@ export default function SpeakingList({ searchQuery = '' }: SpeakingListProps) {
       {/* 编辑器 */}
       {showEditor && (
         <div className="card border-brand-200 bg-brand-50/30">
-          <h3 className="font-medium text-slate-800 mb-4">
+          <h3 className="font-medium text-slate-900 mb-4">
             {editing ? '编辑题目' : (isGroupMode ? '添加题组' : '添加新题目')}
           </h3>
 
@@ -594,7 +610,8 @@ export default function SpeakingList({ searchQuery = '' }: SpeakingListProps) {
                 value={form.part}
                 onChange={e => {
                   const p = Number(e.target.value) as 1 | 2 | 3
-                  setForm({ ...form, part: p })
+                  // 切换 Part 时重置 items，避免数据残留
+                  setForm({ ...form, part: p, items: [{ key: nextKey(), question: '', answer: '' }] })
                 }}
               >
                 {PART_OPTIONS.map(p => (
@@ -627,7 +644,7 @@ export default function SpeakingList({ searchQuery = '' }: SpeakingListProps) {
                   {existingTopics.map(tag => (
                     <button
                       key={tag}
-                      className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 hover:bg-brand-100 hover:text-brand-600 transition-colors"
+                      className="text-xs px-2 py-0.5 rounded-full bg-slate-50 text-slate-600 hover:bg-brand-100 hover:text-brand-600 transition-colors"
                       onClick={() => setForm({ ...form, topic_tag: tag })}
                     >
                       {tag}
@@ -641,7 +658,7 @@ export default function SpeakingList({ searchQuery = '' }: SpeakingListProps) {
           {isGroupMode && !editing ? (
             <div className="space-y-3 mb-4">
               {form.items.map((item, idx) => (
-                <div key={item.key} className="bg-white rounded-lg border border-slate-200 p-3">
+                <div key={item.key} className="bg-white rounded-lg border border-slate-100 p-3">
                   <div className="flex items-center justify-between mb-2">
                     <span className="text-xs font-medium text-slate-400">第 {idx + 1} 题</span>
                     {form.items.length > 1 && (
@@ -723,7 +740,7 @@ export default function SpeakingList({ searchQuery = '' }: SpeakingListProps) {
             <div key={g.topic}>
               <div className="flex items-center gap-2 mb-2">
                 <FolderOpen size={16} className="text-brand-500" />
-                <span className="text-sm font-semibold text-slate-700">{g.topic}</span>
+                <span className="text-sm font-semibold text-slate-600">{g.topic}</span>
                 <span className="text-xs text-slate-400">({g.questions.length} 题)</span>
                 <button
                   className="btn btn-ghost btn-xs text-xs"

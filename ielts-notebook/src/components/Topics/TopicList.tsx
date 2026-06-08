@@ -98,7 +98,7 @@ export default function TopicList({ searchQuery = '' }: TopicListProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-slate-800">Topic 素材库</h2>
+        <h2 className="text-lg font-semibold text-slate-900">主题素材</h2>
         <button className="btn btn-primary btn-sm" onClick={() => { resetForm(); setShowEditor(true) }}>
           <Plus size={16} /> 添加素材
         </button>
@@ -107,12 +107,12 @@ export default function TopicList({ searchQuery = '' }: TopicListProps) {
       {/* 编辑器 */}
       {showEditor && (
         <div className="card border-brand-200 bg-brand-50/30">
-          <h3 className="font-medium text-slate-800 mb-4">
+          <h3 className="font-medium text-slate-900 mb-4">
             {editing ? '编辑素材' : '添加新素材'}
           </h3>
           <div className="mb-3">
             <label className="form-label">
-              标签（逗号分隔，可选择已有标签）
+              标签（逗号分隔，每个标签不含逗号）
             </label>
             <input
               className="form-input"
@@ -125,7 +125,7 @@ export default function TopicList({ searchQuery = '' }: TopicListProps) {
                 {allTags.map(tag => (
                   <button
                     key={tag}
-                    className="text-xs px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 hover:bg-brand-100 hover:text-brand-600 transition-colors"
+                    className="text-xs px-2 py-0.5 rounded-full bg-slate-50 text-slate-600 hover:bg-brand-100 hover:text-brand-600 transition-colors"
                     onClick={() => addTagFromSuggestion(tag)}
                   >
                     + {tag}
@@ -169,10 +169,10 @@ export default function TopicList({ searchQuery = '' }: TopicListProps) {
                   )}
                 </div>
                 <div className="flex items-center gap-1 shrink-0 ml-2">
-                  <button className="btn btn-ghost btn-sm" onClick={() => handleEdit(t)}>
+                  <button className="btn btn-ghost btn-sm" onClick={() => handleEdit(t)} aria-label={`编辑 ${t.tags.join(', ') || '素材'}`}>
                     <Edit3 size={14} />
                   </button>
-                  <button className="btn btn-ghost btn-sm text-red-500" onClick={() => handleDelete(t.id)}>
+                  <button className="btn btn-ghost btn-sm text-red-500" onClick={() => handleDelete(t.id)} aria-label={`删除 ${t.tags.join(', ') || '素材'}`}>
                     <Trash2 size={14} />
                   </button>
                 </div>

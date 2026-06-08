@@ -109,10 +109,11 @@ export default function WordList({ searchQuery = '' }: WordListProps) {
       className={`shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-colors ${
         isPlaying(word, accent)
           ? 'bg-brand-500 text-white'
-          : 'bg-slate-100 text-slate-500 hover:bg-brand-100 hover:text-brand-600'
+          : 'bg-slate-50 text-slate-600 hover:bg-brand-100 hover:text-brand-600'
       }`}
       onClick={() => play(word, accent)}
       title={accent === 'uk' ? '英音' : '美音'}
+      aria-label={`朗读 ${word} ${accent === 'uk' ? '英音' : '美音'}`}
     >
       {isPlaying(word, accent) ? (
         <Loader2 size={14} className="animate-spin" />
@@ -125,7 +126,7 @@ export default function WordList({ searchQuery = '' }: WordListProps) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-slate-800">发音本</h2>
+        <h2 className="text-lg font-semibold text-slate-900">发音本</h2>
         <button className="btn btn-primary btn-sm" onClick={() => { resetForm(); setShowEditor(true) }}>
           <Plus size={16} /> 添加单词
         </button>
@@ -134,7 +135,7 @@ export default function WordList({ searchQuery = '' }: WordListProps) {
       {/* 编辑器 */}
       {showEditor && (
         <div className="card border-brand-200 bg-brand-50/30">
-          <h3 className="font-medium text-slate-800 mb-4">
+          <h3 className="font-medium text-slate-900 mb-4">
             {editing ? '编辑单词' : '添加单词'}
           </h3>
           <div className="mb-3">
@@ -145,7 +146,6 @@ export default function WordList({ searchQuery = '' }: WordListProps) {
                 value={form.word}
                 onChange={e => setForm({ ...form, word: e.target.value })}
                 placeholder="输入单词..."
-                onBlur={handleLookup}
               />
               <button
                 className="btn btn-secondary btn-sm shrink-0"
@@ -202,16 +202,16 @@ export default function WordList({ searchQuery = '' }: WordListProps) {
 
             return (
               <div key={w.id} className="card flex items-center gap-3 group">
-                <span className="font-medium text-slate-800 min-w-[80px]">{w.word}</span>
+                <span className="font-semibold text-[1.1875rem] text-slate-800 min-w-[100px]">{w.word}</span>
 
                 <div className="flex-1 flex items-center gap-4 min-w-0">
                   {phoneticUk && (
-                    <span className="text-sm text-slate-500 font-mono shrink-0">
+                    <span className="text-[0.9375rem] text-slate-600 font-mono shrink-0">
                       UK {phoneticUk}
                     </span>
                   )}
                   {phoneticUs && (
-                    <span className="text-sm text-slate-500 font-mono shrink-0">
+                    <span className="text-[0.9375rem] text-slate-600 font-mono shrink-0">
                       US {phoneticUs}
                     </span>
                   )}
@@ -220,10 +220,10 @@ export default function WordList({ searchQuery = '' }: WordListProps) {
                 <div className="flex items-center gap-1 shrink-0">
                   {playButton(w.word, 'uk')}
                   {playButton(w.word, 'us')}
-                  <button className="btn btn-ghost btn-sm opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleEdit(w)}>
+                  <button className="btn btn-ghost btn-sm sm:opacity-0 sm:group-hover:opacity-100 transition-opacity" onClick={() => handleEdit(w)} aria-label={`编辑 ${w.word}`}>
                     <Edit3 size={14} />
                   </button>
-                  <button className="btn btn-ghost btn-sm text-red-500 opacity-0 group-hover:opacity-100 transition-opacity" onClick={() => handleDelete(w.id)}>
+                  <button className="btn btn-ghost btn-sm text-red-500 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity" onClick={() => handleDelete(w.id)} aria-label={`删除 ${w.word}`}>
                     <Trash2 size={14} />
                   </button>
                 </div>

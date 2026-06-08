@@ -1,12 +1,13 @@
 import { useState } from 'react'
-import { Brain, Sparkles, Copy, AlertCircle, MessageSquare } from 'lucide-react'
-import { callDeepSeek, buildAnswerPrompt } from '@/lib/deepseek'
+import { Brain, Sparkles, Copy, AlertCircle, MessageSquare, Save } from 'lucide-react'
+import { callDeepSeek, buildAnswerPrompt, cleanAiResponse } from '@/lib/deepseek'
+import { db } from '@/lib/supabase'
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery'
 import { PART_OPTIONS } from '@/types'
 import type { SpeakingQA } from '@/types'
 
 export default function AIAnswerGenerator() {
-  const { data: questions } = useSupabaseQuery<SpeakingQA>('speaking_qa')
+  const { data: questions, refetch } = useSupabaseQuery<SpeakingQA>('speaking_qa')
 
   const [part, setPart] = useState<1 | 2 | 3>(1)
   const [question, setQuestion] = useState('')
@@ -14,8 +15,9 @@ export default function AIAnswerGenerator() {
   const [generating, setGenerating] = useState(false)
   const [result, setResult] = useState('')
   const [error, setError] = useState('')
+  const [savingToSpeaking, setSavingToSpeaking] = useState(false)
+  const [savedMsg, setSavedMsg] = useState('')
 
-  // 筛选当前 Part 的题目供快速选择
   const partQuestions = questions.filter(q => q.part === part)
 
   const handleGenerate = async () => {
@@ -23,15 +25,38 @@ export default function AIAnswerGenerator() {
     setGenerating(true)
     setError('')
     setResult('')
+    setSavedMsg('')
 
     try {
       const prompt = buildAnswerPrompt(question.trim(), part, bandScore)
       const answer = await callDeepSeek(prompt)
-      setResult(answer)
+      setResult(cleanAiResponse(answer))
     } catch (err) {
       setError(err instanceof Error ? err.message : '生成失败')
     } finally {
       setGenerating(false)
+    }
+  }
+
+  const handleSaveToSpeaking = async () => {
+    if (!result || !question.trim()) return
+    setSavingToSpeaking(true)
+    setSavedMsg('')
+    try {
+      await db().from('speaking_qa').insert({
+        part,
+        question: question.trim(),
+        answer: '',
+        ai_answer: result,
+        topic_tag: '',
+      })
+      setSavedMsg('已保存到串题板块')
+      refetch()
+    } catch (err) {
+      console.error('保存失败:', err)
+      setSavedMsg('保存失败')
+    } finally {
+      setSavingToSpeaking(false)
     }
   }
 
@@ -40,8 +65,8 @@ export default function AIAnswerGenerator() {
       <div className="flex items-center gap-3">
         <Brain size={24} className="text-brand-600" />
         <div>
-          <h2 className="text-lg font-semibold text-slate-800">AI 生成参考答案</h2>
-          <p className="text-sm text-slate-500">选择 Part 类型和题目，AI 为你生成高分口语答案</p>
+          <h2 className="text-lg font-semibold text-slate-900">AI 生成参考答案</h2>
+          <p className="text-sm text-slate-600">选择 Part 类型和题目，AI 为你生成高分口语答案</p>
         </div>
       </div>
 
@@ -54,7 +79,7 @@ export default function AIAnswerGenerator() {
               <button
                 key={p.value}
                 className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                  part === p.value ? 'bg-brand-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  part === p.value ? 'bg-brand-500 text-white' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
                 }`}
                 onClick={() => setPart(p.value)}
               >
@@ -73,7 +98,7 @@ export default function AIAnswerGenerator() {
             </label>
             <select
               className="form-select"
-              value=""
+              value={question}
               onChange={e => { if (e.target.value) setQuestion(e.target.value) }}
             >
               <option value="">-- 选择已有题目 --</option>
@@ -104,7 +129,7 @@ export default function AIAnswerGenerator() {
               <button
                 key={score}
                 className={`px-4 py-1.5 rounded-lg text-sm font-medium transition-colors ${
-                  bandScore === score ? 'bg-brand-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                  bandScore === score ? 'bg-brand-500 text-white' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'
                 }`}
                 onClick={() => setBandScore(score)}
               >
@@ -141,8 +166,43 @@ export default function AIAnswerGenerator() {
                 <Copy size={14} /> 复制
               </button>
             </div>
-            <div className="prose prose-sm max-w-none bg-slate-50 rounded-lg p-5 whitespace-pre-wrap text-sm leading-relaxed text-slate-700">
+            <div className="prose prose-sm max-w-none bg-slate-50 rounded-lg p-5 whitespace-pre-wrap text-[1rem] leading-relaxed text-slate-600">
               {result}
+            </div>
+
+            {/* 保存到串题 */}
+            <div className="border-t border-slate-100 pt-3 space-y-3">
+              <p className="text-sm font-medium text-slate-600">保存到串题板块</p>
+              <div className="flex items-center gap-3 flex-wrap">
+                <select
+                  className="form-select w-auto text-sm"
+                  value={part}
+                  onChange={e => setPart(Number(e.target.value) as 1 | 2 | 3)}
+                >
+                  {PART_OPTIONS.map(p => (
+                    <option key={p.value} value={p.value}>{p.label}</option>
+                  ))}
+                </select>
+                <input
+                  className="form-input flex-1 min-w-[200px] text-sm"
+                  value={question}
+                  onChange={e => setQuestion(e.target.value)}
+                  placeholder="可修改题目文本..."
+                />
+                <button
+                  className="btn btn-primary btn-sm"
+                  onClick={handleSaveToSpeaking}
+                  disabled={savingToSpeaking}
+                >
+                  <Save size={14} />
+                  {savingToSpeaking ? '保存中...' : '保存到串题'}
+                </button>
+              </div>
+              {savedMsg && (
+                <p className={`text-xs ${savedMsg.includes('失败') ? 'text-red-500' : 'text-green-600'}`}>
+                  {savedMsg}
+                </p>
+              )}
             </div>
           </div>
         )}

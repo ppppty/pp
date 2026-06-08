@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Plus, Edit3, Trash2, Filter } from 'lucide-react'
 import { db } from '@/lib/supabase'
 import { useSupabaseQuery } from '@/hooks/useSupabaseQuery'
@@ -17,7 +17,7 @@ export default function ExpressionList({ searchQuery = '' }: ExpressionListProps
   const [saving, setSaving] = useState(false)
 
   const [form, setForm] = useState({
-    expr_type: 'vocabulary' as ExpressionType,
+    expr_type: 'word' as ExpressionType,
     term: '',
     meaning: '',
     notes: '',
@@ -40,8 +40,35 @@ export default function ExpressionList({ searchQuery = '' }: ExpressionListProps
     grouped[key].push(e)
   })
 
+  // 旧类型 → 新类型迁移
+  const legacyMap: Record<string, ExpressionType> = {
+    vocabulary: 'word',
+    sentence_pattern: 'phrase',
+    sentence: 'phrase',
+    paragraph: 'phrase',
+    idiom: 'phrase',
+    phrasal_verb: 'phrase',
+  }
+
+  useEffect(() => {
+    const needMigrate = expressions.filter(e => legacyMap[e.expr_type])
+    if (needMigrate.length === 0) return
+
+    const migrate = async () => {
+      const supabase = db()
+      for (const e of needMigrate) {
+        const newType = legacyMap[e.expr_type]
+        await supabase.from('expressions')
+          .update({ expr_type: newType, updated_at: new Date().toISOString() })
+          .eq('id', e.id)
+      }
+      refetch()
+    }
+    migrate()
+  }, [expressions])
+
   const resetForm = () => {
-    setForm({ expr_type: 'vocabulary', term: '', meaning: '', notes: '' })
+    setForm({ expr_type: 'word', term: '', meaning: '', notes: '' })
     setEditing(null)
     setShowEditor(false)
   }
@@ -89,7 +116,7 @@ export default function ExpressionList({ searchQuery = '' }: ExpressionListProps
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm('确定删除这条表达吗？')) return
+    if (!confirm('确定删除这条词汇吗？')) return
     try {
       const supabase = db()
       await supabase.from('expressions').delete().eq('id', id)
@@ -102,26 +129,20 @@ export default function ExpressionList({ searchQuery = '' }: ExpressionListProps
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-slate-800">表达库</h2>
+        <h2 className="text-xl font-bold text-slate-900">词汇表达</h2>
         <button className="btn btn-primary btn-sm" onClick={() => { resetForm(); setShowEditor(true) }}>
-          <Plus size={16} /> 添加表达
+          <Plus size={17} /> 添加词汇
         </button>
       </div>
 
       {/* 类型筛选 */}
       <div className="flex items-center gap-2 flex-wrap">
-        <Filter size={14} className="text-slate-400" />
-        <button
-          className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${!filterType ? 'bg-brand-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-          onClick={() => setFilterType('')}
-        >
-          全部
-        </button>
+        <Filter size={16} className="text-slate-400" />
         {EXPRESSION_TYPE_OPTIONS.map(opt => (
           <button
             key={opt.value}
-            className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${filterType === opt.value ? 'bg-brand-500 text-white' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}
-            onClick={() => setFilterType(opt.value)}
+            className={`px-3.5 py-1.5 rounded-full text-[0.875rem] font-medium transition-colors ${filterType === opt.value ? 'bg-brand-500 text-white shadow-sm' : 'bg-slate-50 text-slate-600 hover:bg-slate-100'}`}
+            onClick={() => setFilterType(filterType === opt.value ? '' : opt.value)}
           >
             {opt.label}
           </button>
@@ -131,8 +152,8 @@ export default function ExpressionList({ searchQuery = '' }: ExpressionListProps
       {/* 编辑器 */}
       {showEditor && (
         <div className="card border-brand-200 bg-brand-50/30">
-          <h3 className="font-medium text-slate-800 mb-4">
-            {editing ? '编辑表达' : '添加新表达'}
+          <h3 className="font-semibold text-slate-900 text-[1.0625rem] mb-4">
+            {editing ? '编辑词汇' : '添加新词汇'}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
             <div>
@@ -144,7 +165,7 @@ export default function ExpressionList({ searchQuery = '' }: ExpressionListProps
               </select>
             </div>
             <div>
-              <label className="form-label">表达</label>
+              <label className="form-label">词汇</label>
               <input className="form-input" value={form.term} onChange={e => setForm({ ...form, term: e.target.value })} placeholder="如: a piece of cake..." />
             </div>
           </div>
@@ -170,21 +191,13 @@ export default function ExpressionList({ searchQuery = '' }: ExpressionListProps
         <div className="text-center py-12 text-slate-400">加载中...</div>
       ) : filtered.length === 0 ? (
         <div className="text-center py-12 text-slate-400">
-          {expressions.length === 0 ? '还没有表达，点击「添加表达」开始积累' : '没有匹配的表达'}
-        </div>
-      ) : filterType ? (
-        // 不分组显示
-        <div className="space-y-2">
-          {filtered.map(e => (
-            <ExpressionCard key={e.id} expr={e} onEdit={handleEdit} onDelete={handleDelete} />
-          ))}
+          {expressions.length === 0 ? '还没有词汇，点击「添加词汇」开始积累' : '没有匹配的词汇'}
         </div>
       ) : (
-        // 按类型分组显示
         <div className="space-y-6">
           {Object.entries(grouped).map(([type, items]) => (
             <div key={type}>
-              <h3 className="text-sm font-medium text-slate-500 mb-2">
+              <h3 className="text-[0.9375rem] font-semibold text-slate-500 mb-2">
                 {EXPRESSION_TYPE_LABELS[type as ExpressionType] || type}
                 <span className="text-slate-400 ml-1">({items.length})</span>
               </h3>
@@ -210,22 +223,28 @@ function ExpressionCard({
   onEdit: (e: Expression) => void
   onDelete: (id: string) => void
 }) {
+  const typeLabel = EXPRESSION_TYPE_LABELS[expr.expr_type] || expr.expr_type
+
   return (
-    <div className="card flex items-start gap-3 group">
-      <div className="flex-1 min-w-0">
-        <span className="block font-semibold text-slate-800">{expr.term}</span>
-        {expr.meaning && (
-          <p className="text-sm text-slate-500 mt-1.5">{expr.meaning}</p>
-        )}
-        {expr.notes && (
-          <p className="text-xs text-slate-400 mt-0.5">{expr.notes}</p>
-        )}
-      </div>
-      <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity">
-        <button className="btn btn-ghost btn-sm" onClick={() => onEdit(expr)}>
+    <div className="card flex items-center gap-4 group">
+      {/* 左边：英文 */}
+      <span className="font-semibold text-[1.0625rem] text-slate-800 min-w-0 flex-1">
+        {expr.term}
+      </span>
+      {/* 中间：词性 */}
+      <span className="text-xs text-slate-500 bg-slate-50 px-2.5 py-1 rounded-full whitespace-nowrap shrink-0">
+        {typeLabel}
+      </span>
+      {/* 右边：中文释义 */}
+      <span className="text-[0.9375rem] text-slate-500 min-w-0 flex-1 text-right">
+        {expr.meaning || '—'}
+      </span>
+      {/* 操作按钮 */}
+      <div className="flex items-center gap-1 shrink-0 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+        <button className="btn btn-ghost btn-sm" onClick={() => onEdit(expr)} aria-label={`编辑 ${expr.term}`}>
           <Edit3 size={14} />
         </button>
-        <button className="btn btn-ghost btn-sm text-red-500" onClick={() => onDelete(expr.id)}>
+        <button className="btn btn-ghost btn-sm text-red-500" onClick={() => onDelete(expr.id)} aria-label={`删除 ${expr.term}`}>
           <Trash2 size={14} />
         </button>
       </div>

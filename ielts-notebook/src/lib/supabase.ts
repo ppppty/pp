@@ -12,6 +12,10 @@ function getCredentials() {
 export function saveCredentials(url: string, anon: string) {
   localStorage.setItem(STORAGE_KEY_URL, url)
   localStorage.setItem(STORAGE_KEY_ANON, anon)
+  // 重置客户端和缓存，下次调用时使用新凭据
+  supabaseInstance = null
+  // 动态导入 deepseek 的缓存清理函数，避免循环依赖
+  import('./deepseek').then(m => m.clearDeepSeekCache()).catch(() => {})
 }
 
 export function hasCredentials(): boolean {
@@ -29,6 +33,10 @@ export function getSupabase() {
   }
   supabaseInstance = createClient(url, anon)
   return supabaseInstance
+}
+
+export function resetSupabase() {
+  supabaseInstance = null
 }
 
 /** 返回类型宽松的 Supabase 客户端（用于 insert/update 操作） */
