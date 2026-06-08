@@ -47,12 +47,14 @@ jobs:
 
       - name: Assemble deploy directory
         run: |
-          mkdir -p _deploy/paichang _deploy/scenic-marketing _deploy/ielts-notebook
-          # Portfolio 个人网站 → 根路径
-          cp portfolio.html _deploy/index.html
-          cp my-photo.jpg my-photo-back.jpg my-photo-about.jpg _deploy/ 2>/dev/null || true
-          cp social-xhs.jpg social-bili.jpg social-douyin.jpg _deploy/ 2>/dev/null || true
-          cp ppt-*.pptx _deploy/ 2>/dev/null || true
+          mkdir -p _deploy/paichang _deploy/scenic-marketing _deploy/ielts-notebook _deploy/portfolio
+          # 个人简历网站 → 根路径
+          cp -r resume/dist/* _deploy/
+          # Portfolio 个人作品集 → /portfolio/
+          cp portfolio.html _deploy/portfolio/index.html
+          cp my-photo.jpg my-photo-back.jpg my-photo-about.jpg _deploy/portfolio/ 2>/dev/null || true
+          cp social-xhs.jpg social-bili.jpg social-douyin.jpg _deploy/portfolio/ 2>/dev/null || true
+          cp ppt-*.pptx _deploy/portfolio/ 2>/dev/null || true
           # 排期系统 → /paichang/
           cp -r paichang-system/dist/* _deploy/paichang/
           # 营销平台 → /scenic-marketing/
