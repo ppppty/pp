@@ -21,7 +21,8 @@ jobs:
         with:
           node-version: 20
 
-      - name: Build 个人网站
+      - name: Build 个人网站 (resume)
+        if: hashFiles('resume/package.json') != ''
         working-directory: resume
         run: |
           npm ci
@@ -48,8 +49,8 @@ jobs:
       - name: Assemble deploy directory
         run: |
           mkdir -p _deploy/paichang _deploy/scenic-marketing _deploy/ielts-notebook _deploy/portfolio
-          # 个人简历网站 → 根路径
-          cp -r resume/dist/* _deploy/
+          # 个人简历网站 → 根路径 (if exists)
+          if [ -d resume/dist ]; then cp -r resume/dist/* _deploy/; fi
           # Portfolio 个人作品集 → /portfolio/
           cp portfolio.html _deploy/portfolio/index.html
           cp my-photo.jpg my-photo-back.jpg my-photo-about.jpg _deploy/portfolio/ 2>/dev/null || true
