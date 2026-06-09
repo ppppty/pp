@@ -56,6 +56,7 @@ jobs:
           cp my-photo.jpg my-photo-back.jpg my-photo-about.jpg _deploy/portfolio/ 2>/dev/null || true
           cp social-xhs.jpg social-bili.jpg social-douyin.jpg _deploy/portfolio/ 2>/dev/null || true
           cp ppt-*.pptx _deploy/portfolio/ 2>/dev/null || true
+          cp ai-shot-*.png _deploy/portfolio/ 2>/dev/null || true
           # 排期系统 → /paichang/
           cp -r paichang-system/dist/* _deploy/paichang/
           # 营销平台 → /scenic-marketing/

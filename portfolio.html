@@ -1159,8 +1159,83 @@ a.project-card { cursor: pointer; }
   transform: translateY(-1px);
 }
 
+/* Screenshot gallery inside project cards */
+.proj-shots {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  position: relative;
+  z-index: 1;
+}
+.proj-shots.single .proj-shot-wrap { flex: 1; }
+.proj-shot-wrap {
+  flex: 1;
+  position: relative;
+  border-radius: 6px;
+  overflow: hidden;
+  box-shadow: 0 3px 12px rgba(0,0,0,0.06);
+  background: #fafaf9;
+  border: 3px solid #fff;
+  transition: transform 0.35s cubic-bezier(0.22,0.61,0.36,1), box-shadow 0.35s;
+  cursor: pointer;
+}
+.proj-shot-wrap:hover {
+  transform: scale(1.03) rotate(0.3deg);
+  box-shadow: 0 8px 28px rgba(0,0,0,0.1);
+}
+.proj-shot-wrap img {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+  object-position: top;
+}
+/* Tiny tape accent on screenshot */
+.proj-shot-wrap::before {
+  content: '';
+  position: absolute;
+  top: -6px; left: 50%;
+  transform: translateX(-50%) rotate(-2deg);
+  width: 36px; height: 12px;
+  background: rgba(220,205,195,0.55);
+  border-radius: 1px;
+  z-index: 2;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+.proj-shot-wrap:nth-child(2)::before { transform: translateX(-50%) rotate(1.5deg); width: 30px; }
+/* Lightbox overlay */
+.proj-shot-lightbox {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.82);
+  z-index: 99999;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.proj-shot-lightbox.active { display: flex; }
+.proj-shot-lightbox img {
+  max-width: 92vw;
+  max-height: 92vh;
+  border-radius: 6px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  border: 4px solid #fff;
+}
+.proj-shot-lightbox .lb-close {
+  position: absolute;
+  top: 20px; right: 28px;
+  font-size: 2rem;
+  color: #fff;
+  cursor: pointer;
+  opacity: 0.7;
+  transition: opacity 0.2s;
+}
+.proj-shot-lightbox .lb-close:hover { opacity: 1; }
+
 @media (max-width: 768px) {
   .projects-grid { grid-template-columns: 1fr; }
+  .proj-shots { flex-direction: column; }
 }
 
 /* ══════════ COMPETITIONS ══════════ */
@@ -1759,6 +1834,11 @@ a.project-card { cursor: pointer; }
           <span class="tech-tag">Vibe Coding</span>
           <span class="tech-tag">用户增长</span>
         </div>
+        <div class="proj-shots single">
+          <div class="proj-shot-wrap" onclick="openLightbox(this.querySelector('img').src)">
+            <img src="ai-shot-01.png" alt="智创运河截图" loading="lazy">
+          </div>
+        </div>
         <div class="proj-links">
           <a href="https://zhichuang-canal-platform.vercel.app/" target="_blank" class="proj-link-btn">访问项目 ↗</a>
         </div>
@@ -1780,6 +1860,11 @@ a.project-card { cursor: pointer; }
           <span class="tech-tag">Vue 3</span>
           <span class="tech-tag">流程自动化</span>
           <span class="tech-tag">效率提升</span>
+        </div>
+        <div class="proj-shots single">
+          <div class="proj-shot-wrap" onclick="openLightbox(this.querySelector('img').src)">
+            <img src="ai-shot-02.png" alt="景点营销平台截图" loading="lazy">
+          </div>
         </div>
         <div class="proj-links">
           <a href="https://ppppty.github.io/pp/scenic-marketing/" target="_blank" class="proj-link-btn">营销平台 ↗</a>
@@ -1804,6 +1889,14 @@ a.project-card { cursor: pointer; }
           <span class="tech-tag">DeepSeek API</span>
           <span class="tech-tag">TypeScript</span>
         </div>
+        <div class="proj-shots">
+          <div class="proj-shot-wrap" onclick="openLightbox(this.querySelector('img').src)">
+            <img src="ai-shot-03.png" alt="雅思口语截图1" loading="lazy">
+          </div>
+          <div class="proj-shot-wrap" onclick="openLightbox(this.querySelector('img').src)">
+            <img src="ai-shot-04.png" alt="雅思口语截图2" loading="lazy">
+          </div>
+        </div>
         <div class="proj-links">
           <a href="https://ppppty.github.io/pp/ielts-notebook/" target="_blank" class="proj-link-btn">访问项目 ↗</a>
         </div>
@@ -1825,6 +1918,11 @@ a.project-card { cursor: pointer; }
           <span class="tech-tag">AI Agent</span>
           <span class="tech-tag">知识图谱</span>
           <span class="tech-tag">自动化</span>
+        </div>
+        <div class="proj-shots single">
+          <div class="proj-shot-wrap" onclick="openLightbox(this.querySelector('img').src)">
+            <img src="ai-shot-05.png" alt="Obsidian截图" loading="lazy">
+          </div>
         </div>
       </div>
 
@@ -2225,8 +2323,28 @@ a.project-card { cursor: pointer; }
     });
   });
 
+  // Lightbox
+  window.openLightbox = function(src) {
+    document.getElementById('lightbox-img').src = src;
+    document.getElementById('lightbox').classList.add('active');
+    document.body.style.overflow = 'hidden';
+  };
+  window.closeLightbox = function() {
+    document.getElementById('lightbox').classList.remove('active');
+    document.body.style.overflow = '';
+  };
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeLightbox();
+  });
+
 })();
 </script>
+
+<!-- Lightbox -->
+<div class="proj-shot-lightbox" id="lightbox" onclick="closeLightbox()">
+  <span class="lb-close">&times;</span>
+  <img src="" alt="截图放大" id="lightbox-img">
+</div>
 
 </body>
 </html>
