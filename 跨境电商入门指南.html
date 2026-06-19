@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>跨境电商入门指南 · 来自63岁过来人的经验</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;500;600;700&family=Source+Serif+Pro:ital,wght@0,400;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #f5f4ed;
+    --paper-dark: #efeee5;
+    --ink: #1f1d18;
+    --ink-soft: #4a453b;
+    --ink-blue: #1B365D;
+    --rule: #d4d1c5;
+    --warm-accent: #c47f3a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    font-family: 'Noto Serif SC', 'Source Serif Pro', Georgia, serif;
+    background: var(--paper);
+    color: var(--ink);
+    font-size: 18px;
+    line-height: 1.7;
+  }
+  .display { font-family: 'Noto Serif SC', 'Source Serif Pro', Georgia, serif; }
+  .meta { font-family: 'IBM Plex Mono', ui-monospace, monospace; }
+  .rule { border-color: var(--rule) !important; }
+  .ink-blue { color: var(--ink-blue); }
+  .warm { color: var(--warm-accent); }
+
+  /* 大字号阅读优化 */
+  h1 { font-size: clamp(32px, 5vw, 52px); line-height: 1.25; font-weight: 600; letter-spacing: 0.02em; }
+  h2 { font-size: clamp(24px, 3.5vw, 34px); line-height: 1.35; font-weight: 600; margin-top: 2.5em; margin-bottom: 0.6em; }
+  h3 { font-size: clamp(20px, 2.5vw, 26px); line-height: 1.4; font-weight: 600; margin-top: 2em; margin-bottom: 0.5em; }
+  p { margin-bottom: 1.2em; }
+
+  /* 引用块 */
+  blockquote {
+    border-left: 3px solid var(--ink-blue);
+    padding-left: 1.2em;
+    margin: 1.8em 0;
+    font-style: italic;
+    color: var(--ink-soft);
+    font-size: 1.15em;
+  }
+
+  /* 表格 */
+  .table-wrap {
+    overflow-x: auto;
+    margin: 1.5em 0;
+    border: 1px solid var(--rule);
+    border-radius: 2px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 16px;
+    line-height: 1.6;
+  }
+  thead th {
+    background: var(--ink-blue);
+    color: #f5f4ed;
+    font-weight: 500;
+    text-align: left;
+    padding: 12px 16px;
+    font-size: 15px;
+    letter-spacing: 0.05em;
+  }
+  tbody td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--rule);
+    vertical-align: top;
+  }
+  tbody tr:nth-child(even) td {
+    background: var(--paper-dark);
+  }
+  tbody tr:hover td {
+    background: #e8e6d8;
+  }
+
+  /* 标签 */
+  .tag {
+    display: inline-block;
+    padding: 4px 12px;
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    background: var(--ink-blue);
+    color: #f5f4ed;
+    margin-right: 6px;
+    margin-bottom: 6px;
+  }
+  .tag-outline {
+    display: inline-block;
+    padding: 3px 11px;
+    font-size: 13px;
+    letter-spacing: 0.08em;
+    border: 1px solid var(--ink-blue);
+    color: var(--ink-blue);
+    margin-right: 6px;
+    margin-bottom: 6px;
+  }
+
+  /* 高亮卡片 */
+  .card {
+    background: var(--paper-dark);
+    border: 1px solid var(--rule);
+    padding: 24px 28px;
+    margin: 1.5em 0;
+  }
+  .card-accent {
+    border-left: 4px solid var(--ink-blue);
+    background: var(--paper-dark);
+    padding: 20px 24px;
+    margin: 1.5em 0;
+  }
+  .card-warm {
+    border-left: 4px solid var(--warm-accent);
+    background: #fdf8f2;
+    padding: 20px 24px;
+    margin: 1.5em 0;
+  }
+
+  /* 总结数字 */
+  .big-number {
+    font-size: clamp(42px, 8vw, 72px);
+    font-weight: 600;
+    color: var(--ink-blue);
+    line-height: 1;
+  }
+
+  /* 标志/徽章 */
+  .badge-yes {
+    display: inline-block;
+    font-size: 14px;
+    padding: 2px 10px;
+    background: #d4e9d6;
+    color: #2d5a2e;
+    font-weight: 500;
+  }
+  .badge-no {
+    display: inline-block;
+    font-size: 14px;
+    padding: 2px 10px;
+    background: #f0dbdb;
+    color: #8b3a3a;
+    font-weight: 500;
+  }
+  .badge-maybe {
+    display: inline-block;
+    font-size: 14px;
+    padding: 2px 10px;
+    background: #fef0d0;
+    color: #8b6914;
+    font-weight: 500;
+  }
+
+  /* hairline divider */
+  .hairline {
+    border: none;
+    border-top: 1px solid var(--rule);
+    margin: 2.5em 0;
+  }
+  .hairline-short {
+    border: none;
+    border-top: 1px solid var(--rule);
+    width: 60%;
+    margin: 2em auto;
+  }
+
+  /* 响应式 */
+  @media (max-width: 640px) {
+    body { font-size: 16px; }
+    table { font-size: 14px; }
+    thead th, tbody td { padding: 8px 10px; }
+    .card, .card-accent, .card-warm { padding: 16px 18px; }
+  }
+
+  /* 打印 */
+  @media print {
+    body { font-size: 13px; }
+    .max-w-3xl { max-width: 100% !important; }
+  }
+
+  /* 术语弹出 */
+  .term {
+    border-bottom: 1px dashed var(--ink-blue);
+    cursor: help;
+    color: var(--ink-blue);
+  }
+  .term:hover { background: #e8e4d5; }
+
+  /* 流程步骤 */
+  .step-list {
+    counter-reset: step;
+    list-style: none;
+    padding-left: 0;
+  }
+  .step-list li {
+    counter-increment: step;
+    position: relative;
+    padding-left: 52px;
+    margin-bottom: 1.5em;
+    min-height: 40px;
+  }
+  .step-list li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: -2px;
+    width: 36px;
+    height: 36px;
+    background: var(--ink-blue);
+    color: #f5f4ed;
+    font-size: 18px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  }
+
+  /* 心法金句 */
+  .golden-quote {
+    font-size: 1.2em;
+    line-height: 1.6;
+    padding: 28px 32px;
+    background: linear-gradient(135deg, #fdf8f2, #f5f4ed);
+    border: 1px solid var(--rule);
+    margin: 1em 0;
+  }
+</style>
+</head>
+<body class="min-h-screen">
+
+<div class="max-w-3xl mx-auto px-6 sm:px-10 py-10 sm:py-16">
+
+  <!-- 顶部标识行 -->
+  <header class="flex items-baseline justify-between border-b rule pb-3 text-xs meta uppercase tracking-widest" style="color:#6b665b">
+    <span>跨境电商入门指南</span>
+    <span>2026</span>
+    <span>给想尝试的你</span>
+  </header>
+
+  <!-- 标签行 -->
+  <div class="mt-10 flex flex-wrap items-baseline gap-2">
+    <span class="tag">经验分享</span>
+    <span class="tag-outline">零基础</span>
+    <span class="tag-outline">50岁+</span>
+  </div>
+
+  <!-- 标题 -->
+  <h1 class="display mt-4">
+    跨境电商，<br/>
+    <span class="ink-blue" style="font-style:italic">63岁</span>的过来人<br/>
+    说给你听。
+  </h1>
+
+  <!-- 导语 -->
+  <p class="mt-6 text-xl sm:text-2xl leading-relaxed max-w-xl" style="color:#4a453b">
+    本攻略整理自小红书博主<strong>"63岁跨境新人"</strong>的视频内容。
+    她63岁、零英语基础、从零起步，用一年多时间做成了跨境电商。
+    以下是她踩过的坑、学到的经验，一条一条讲给你听。
+  </p>
+
+  <!-- 核心数字 -->
+  <div class="mt-10 grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+    <div class="card">
+      <div class="big-number">63</div>
+      <div class="text-sm meta tracking-wide ink-blue mt-1">岁开始做</div>
+    </div>
+    <div class="card">
+      <div class="big-number">0</div>
+      <div class="text-sm meta tracking-wide ink-blue mt-1">英语基础</div>
+    </div>
+    <div class="card">
+      <div class="big-number">5<span style="font-size:0.5em">万</span></div>
+      <div class="text-sm meta tracking-wide ink-blue mt-1">启动资金</div>
+    </div>
+    <div class="card">
+      <div class="big-number">1<span style="font-size:0.5em">年</span></div>
+      <div class="text-sm meta tracking-wide ink-blue mt-1">开始赚钱</div>
+    </div>
+  </div>
+
+  <hr class="hairline" />
+
+  <!-- ========== 第一章 ========== -->
+  <h2>一、开始之前，先做好这四样准备</h2>
+
+  <h3>1. 钱：要准备多少？</h3>
+
+  <p>博主前前后后一共投入了<strong class="ink-blue">5万元左右</strong>，每一笔都花得清清楚楚：</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>花在哪里</th>
+          <th>金额</th>
+          <th>简单解释</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>注册公司 + 申请税号</td>
+          <td>约 1,000 元</td>
+          <td>做跨境要用公司名义注册，可以找代办帮忙</td>
+        </tr>
+        <tr>
+          <td>第一批进货</td>
+          <td>约 7,000–8,000 元</td>
+          <td>先少进一点，试试水</td>
+        </tr>
+        <tr>
+          <td>给<span class="term" title="帮你把货运到国外的物流公司">货代</span>的物流费</td>
+          <td>约 4,000–5,000 元</td>
+          <td>把货运到国外的运费</td>
+        </tr>
+        <tr>
+          <td>后续补货 + 测试新产品</td>
+          <td>2–3 万元</td>
+          <td>第一批卖不好，得换产品再试</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card-warm">
+    <strong>博主原话：</strong>"跨境电商不是无本生意。你要准备一笔<strong>亏得起的钱</strong>，想清楚了再做。"
+  </div>
+
+  <h3>2. 心态：两个"心"</h3>
+
+  <p>博主说心态分两种：</p>
+
+  <div class="card-accent">
+    <strong class="ink-blue">开始的勇气</strong>
+    <p class="mt-2 mb-0">她刚开始连电脑摄像头在哪都不知道、腾讯会议都不会开。"不完美的开始，比不开始要好。先动起来，边做边学。"</p>
+  </div>
+
+  <div class="card-accent">
+    <strong class="ink-blue">不放弃的决心</strong>
+    <p class="mt-2 mb-0">头几个月上了5个产品（<span class="term" title="一个具体的款式/规格，比如红色杯子和蓝色杯子是两个SKU">SKU</span>）、52件货，有3个产品完全没人看。坚持到第10个月，一个一直卖不动的产品突然卖光了——她愣了几秒，赶紧截图发给儿子，儿子说："妈，你<strong>爆单了</strong>！"</p>
+  </div>
+
+  <h3>3. 英语：不会怎么办？</h3>
+
+  <p>博主的方法非常简单：</p>
+  <ul class="step-list">
+    <li>在小红书、抖音上搜文章，一篇篇看，照着做</li>
+    <li>店铺注册后，去找平台的官方文档，用<strong>翻译软件</strong>一句一句翻</li>
+    <li>实在看不懂的，让家里人帮忙讲</li>
+    <li><strong>"过程虽然很煎熬，但自己学会的就是自己的东西。"</strong></li>
+  </ul>
+
+  <h3>4. 家人：不支持怎么办？</h3>
+
+  <p>博主的老公一开始也反对："家里两个都在上班，你好好协助就行了，这老骨头了还瞎折腾什么？"但她坚持做，老公看到她每天在电脑边认真选品，慢慢接受了。后来每天早上第一句话就是<strong>"今天卖了多少？"</strong>儿子从一开始就支持，做跨境以后共同话题也多了——以前打电话问"女朋友找得咋样"，现在聊"最近我又选了一个新品"。</p>
+
+  <div class="card-warm">
+    <strong>博主原话：</strong>"如果有家人的支持，那是福气。如果不支持，你自己也要撑着，毕竟是你自己想做的。"
+  </div>
+
+  <hr class="hairline" />
+
+  <!-- ========== 第二章 ========== -->
+  <h2>二、先别问"做哪个平台"，先搞懂大方向</h2>
+
+  <p>博主说，很多人一上来就问"做哪个平台"，其实问早了。要先想清楚三个问题。</p>
+
+  <h3>问题一：货卖给谁？</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>模式</th><th>通俗解释</th><th>适合你吗？</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>传统外贸</strong><br/><span class="meta text-xs">也叫 B2B</span></td>
+          <td>批发给国外商家，他们再卖给别人。<br/>像把鸡蛋批发给菜市场。</td>
+          <td><span class="badge-no">不适合</span> 工厂的事</td>
+        </tr>
+        <tr>
+          <td><strong>跨境零售</strong><br/><span class="meta text-xs">也叫 B2C</span></td>
+          <td>你直接卖给国外的普通消费者。<br/>像在菜市场摆个摊，大妈直接找你买。</td>
+          <td><span class="badge-yes">这就是你做的</span></td>
+        </tr>
+        <tr>
+          <td><strong>品牌出海</strong></td>
+          <td>不光卖货，还让外国人记住你的牌子。<br/>像"阿姨牌鸡蛋"。</td>
+          <td><span class="badge-no">不适合</span> 大玩家的事</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <blockquote>
+    <strong>结论：新手就做第二种——跨境零售。</strong>你是直接卖给外国消费者的。
+  </blockquote>
+
+  <h3>问题二：发货售后谁来管？</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>方式</th><th>通俗解释</th><th>适合你吗？</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>全托管</strong></td>
+          <td>你只管做货，定价/销售/发货/售后全交给平台。<br/>像把包子交给食堂代卖。</td>
+          <td><span class="badge-no">不适合</span> 平台凭什么帮你？</td>
+        </tr>
+        <tr>
+          <td><strong>半托管</strong></td>
+          <td>你自己选品定价，出单后把货送到平台仓库，后面平台管。</td>
+          <td><span class="badge-maybe">可考虑</span> 自主权有限</td>
+        </tr>
+        <tr>
+          <td><strong>自运营</strong></td>
+          <td>从选品、上架、卖货、发货到售后<strong>全是你自己做</strong>。<br/>像自己开包子铺，自己吆喝自己收钱。</td>
+          <td><span class="badge-yes">推荐</span> 累但学到的都是自己的</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <blockquote>
+    <strong>结论：新手做自运营。</strong>虽然辛苦，但每个环节都是你自己的本事，平台不会替你成长。
+  </blockquote>
+
+  <h3>问题三：用什么方式卖？</h3>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>方式</th><th>通俗解释</th><th>适合你吗？</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>货架电商</strong></td>
+          <td>像超市，商品摆上去，用户自己搜了来买。<br/>代表平台：<strong>亚马逊、Noon</strong></td>
+          <td><span class="badge-yes">推荐</span> 不考验语言</td>
+        </tr>
+        <tr>
+          <td><strong>内容电商</strong></td>
+          <td>像电视购物，通过短视频/直播卖货。<br/>代表平台：<strong>TikTok Shop</strong></td>
+          <td><span class="badge-no">不适合</span> 要用外语直播</td>
+        </tr>
+        <tr>
+          <td><strong>社交电商</strong></td>
+          <td>像邻居推荐，在社群里跟人混熟了再卖。<br/>代表渠道：Facebook群组</td>
+          <td><span class="badge-no">不适合</span> 要和外国人社交</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <blockquote>
+    <strong>结论：新手选货架电商。</strong>不挑战自己的语言短板，把商品摆好，等人来买。
+  </blockquote>
+
+  <hr class="hairline" />
+
+  <!-- ========== 第三章 ========== -->
+  <h2>三、怎么选国家和平台？</h2>
+
+  <p>博主说：<strong class="ink-blue">"国家是土壤，平台是树。土壤好，树才长得好。"</strong></p>
+
+  <h3>第一步：先选国家/区域</h3>
+
+  <p>她用<strong>四条标准</strong>来打分：</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>标准</th><th>意思</th><th>为什么重要</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>人口</strong></td><td>这个地区有多少人</td><td>人多 → 市场大</td></tr>
+        <tr><td><strong>消费力</strong></td><td>这里的人有没有钱</td><td>有钱 → 赚得到钱</td></tr>
+        <tr><td><strong>基础设施</strong></td><td>物流快不快、回款稳不稳</td><td>决定你做起来顺不顺</td></tr>
+        <tr><td><strong>竞争程度</strong></td><td>已经有多少人在做了</td><td>太挤 → 新手站不住脚</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p>她当时对比了三个地区：</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>地区</th><th>人口</th><th>消费力</th><th>物流</th><th>竞争</th><th>博主评价</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>北美</strong><br/><span class="text-xs" style="color:#6b665b">美国、加拿大</span></td>
+          <td>多 👍</td><td>强 👍</td><td>好 👍</td><td>极大 😱</td>
+          <td>"像国庆节的景区，挤到气都喘不过来，保命再说。"</td>
+        </tr>
+        <tr>
+          <td><strong>非洲</strong></td>
+          <td>多 👍</td><td>弱 👎</td><td>差 👎</td><td>小 😊</td>
+          <td>"货都送不出去，还谈什么赚钱？"<br/><span class="text-xs" style="color:#6b665b">注：2024年情况，现在已好很多</span></td>
+        </tr>
+        <tr style="border: 2px solid var(--ink-blue);">
+          <td><strong>中东</strong><br/><span class="text-xs" style="color:#6b665b">阿联酋、沙特</span></td>
+          <td>中等<br/><span class="text-xs">约4000万人</span></td><td>强 💰<br/><span class="text-xs">土豪多</span></td><td>不错 👍</td><td>中等 ⚖️</td>
+          <td><strong class="ink-blue">"有那么一点位置，能让新手钻进去。"</strong></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <p class="text-center warm" style="font-size:1.15em"><strong>博主在2024年选了中东。</strong></p>
+
+  <h3>第二步：在这个地区里选平台</h3>
+
+  <p>中东当时主流平台就两个，她这样比较：</p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>比什么</th><th><strong>亚马逊 Amazon</strong></th><th><strong>Noon</strong></th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>规模</td><td>全球最大</td><td>中东最大</td>
+        </tr>
+        <tr>
+          <td>入门难度</td><td>高 —— "五星级酒店，得穿正装才能进"</td><td>较低 —— "不错的特色餐厅，进去就能点菜"</td>
+        </tr>
+        <tr>
+          <td>对新手友好度</td><td><span class="badge-no">不友好</span></td><td><span class="badge-yes">相对友好</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="card-accent">
+    <strong>博主选了 Noon。</strong>原话："我一个63岁的新手，一上来就闯亚马逊，那不是勇气，那是送钱。"
+  </div>
+
+  <hr class="hairline" />
+
+  <!-- ========== 第四章 ========== -->
+  <h2>四、卖什么？破解"不可能三角"</h2>
+
+  <h3>选大类目的三条路</h3>
+
+  <div class="grid sm:grid-cols-3 gap-4 mt-4">
+    <div class="card text-center">
+      <div class="text-3xl mb-2">📊</div>
+      <strong class="ink-blue">跟市场走</strong>
+      <p class="text-sm mt-2 mb-0" style="color:#4a453b">去平台看什么卖得火、在首页 → 什么好卖做什么</p>
+    </div>
+    <div class="card text-center">
+      <div class="text-3xl mb-2">💡</div>
+      <strong class="ink-blue">跟自己走</strong>
+      <p class="text-sm mt-2 mb-0" style="color:#4a453b">你自己懂什么、用过什么 → 从熟悉的东西入手</p>
+    </div>
+    <div class="card text-center">
+      <div class="text-3xl mb-2">🤝</div>
+      <strong class="ink-blue">跟资源走</strong>
+      <p class="text-sm mt-2 mb-0" style="color:#4a453b">身边有没有人做这个、有进货渠道 → 借别人的力</p>
+    </div>
+  </div>
+
+  <h3>新手面临的"不可能三角"</h3>
+
+  <p>三条路很难同时走通：</p>
+
+  <div class="table-wrap">
+    <table>
+      <tbody>
+        <tr><td>卖得好的东西</td><td>→ 你大概率不懂。比如电子产品，博主连名字都念不顺。</td></tr>
+        <tr><td>你懂的东西</td><td>→ 可能没人买。博主喜欢做手工，挂上去一个月没人看。</td></tr>
+        <tr><td>有资源的东西</td><td>→ 你可能既不懂、平台也不好卖。</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3 class="ink-blue">破解方法：占两个就行！</h3>
+
+  <p>博主说：<strong>别强求三个全占，占两个就可以去试。</strong></p>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>如果你有…</th><th>例子</th><th>评价</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>卖得好 + 你懂</strong></td>
+          <td>你对电子产品有兴趣，就从中挑平台上卖得好的</td>
+          <td>⭐ 最理想</td>
+        </tr>
+        <tr>
+          <td><strong>卖得好 + 有资源</strong></td>
+          <td>美妆火，你刚好有亲戚做美妆供应链</td>
+          <td>⭐ 很好</td>
+        </tr>
+        <tr>
+          <td><strong>你懂 + 有资源</strong></td>
+          <td>不一定马上火，但你有底气慢慢熬</td>
+          <td>⭐ 可以试试</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>博主自己的实例</h3>
+
+  <div class="card-accent">
+    <p class="mb-0">她看到中东生育率高（一个家庭好几个孩子很正常），<strong>玩具</strong>在平台上有不少小类目。刚好儿子有个同学，家里之前做国内玩具行业，帮忙引荐了资源。</p>
+    <p class="mt-3 mb-0"><strong class="ink-blue">她占了"卖得还行 + 有点资源"两个，就开始做了。</strong></p>
+  </div>
+
+  <hr class="hairline" />
+
+  <!-- ========== 第五章 ========== -->
+  <h2>五、发货怎么选？一件代发还是官方仓？</h2>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th></th><th><strong>FBN（官方仓发货）</strong></th><th><strong>一件代发（自发货）</strong></th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>做法</strong></td>
+          <td>先把货运到平台在海外的仓库，有人买了平台直接发货</td>
+          <td>有人买了，你才让国内供应商发货</td>
+        </tr>
+        <tr>
+          <td><strong>速度</strong></td>
+          <td><span class="badge-yes">1-2天就到</span></td>
+          <td><span class="badge-no">快则10天，慢则半月</span></td>
+        </tr>
+        <tr>
+          <td><strong>比喻</strong></td>
+          <td>开超市，货提前摆好，客人来了直接拿</td>
+          <td>客人点了单你才打电话调货，等送到客人可能饿得退款了</td>
+        </tr>
+        <tr>
+          <td><strong>平台态度</strong></td>
+          <td><span class="badge-yes">喜欢，给更多曝光</span></td>
+          <td><span class="badge-no">不太推，物流太慢易被投诉</span></td>
+        </tr>
+        <tr>
+          <td><strong>买家信任</strong></td>
+          <td>有FBN标志，一看就靠谱</td>
+          <td>新手店发货慢，没人愿意等</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h3>博主一上来就做 FBN，三个原因：</h3>
+
+  <div class="step-list">
+    <li><strong>平台偏心FBN。</strong>货放在人家仓库，送货快、买家满意，平台愿意帮你推。一件代发半个月才到，买家天天投诉，平台头都大了。</li>
+    <li><strong>三方都开心。</strong>平台赚仓储费配送费、你卖得快赚到钱、买家收到快也开心。"跟吃火锅似的，大家都涮得开心。"</li>
+    <li><strong>有标志，买家更信任。</strong>FBN商品在平台上有专属标志，买家一看就知道发货快、靠谱。</li>
+  </div>
+
+  <h3>FBN的风险和对策</h3>
+
+  <div class="card-warm">
+    <strong>⚠️ 风险：</strong>货卖不出去，仓储费要一直交——就像租了仓库，东西卖不掉房租还得付。<br/>
+    <strong>✅ 对策——小步快跑：</strong>第一批货不多，先试试；跑通了再慢慢加量。<strong>别脑子一热备一大堆。</strong>
+  </div>
+
+  <blockquote>
+    "如果你资金还过得去，想做长期不想天天被物流折腾，<strong class="ink-blue">能FBN就FBN。</strong>"
+  </blockquote>
+
+  <hr class="hairline" />
+
+  <!-- ========== 总结 ========== -->
+  <h2>六、博主送给你的七句话</h2>
+
+  <div class="grid sm:grid-cols-1 gap-3 mt-6">
+    <div class="golden-quote">
+      <span class="meta text-xs tracking-wider ink-blue">01</span>
+      <p class="mt-1 mb-0"><strong>"不完美的开始，比不开始要好。"</strong> —— 先动起来，边做边学。</p>
+    </div>
+    <div class="golden-quote">
+      <span class="meta text-xs tracking-wider ink-blue">02</span>
+      <p class="mt-1 mb-0"><strong>"准备一笔亏得起的钱。"</strong> —— 不是无本生意，但也不用太多，博主只用了5万。</p>
+    </div>
+    <div class="golden-quote">
+      <span class="meta text-xs tracking-wider ink-blue">03</span>
+      <p class="mt-1 mb-0"><strong>"国家是土壤，平台是树。"</strong> —— 先选对地方，再选对平台。</p>
+    </div>
+    <div class="golden-quote">
+      <span class="meta text-xs tracking-wider ink-blue">04</span>
+      <p class="mt-1 mb-0"><strong>"三个占两个就能试。"</strong> —— 不用什么条件都完美。</p>
+    </div>
+    <div class="golden-quote">
+      <span class="meta text-xs tracking-wider ink-blue">05</span>
+      <p class="mt-1 mb-0"><strong>"小步快跑，不是一步跨到坑里。"</strong> —— 先少量试，跑通了再加。</p>
+    </div>
+    <div class="golden-quote">
+      <span class="meta text-xs tracking-wider ink-blue">06</span>
+      <p class="mt-1 mb-0"><strong>"自己学会的就是自己的东西。"</strong> —— 不懂英语用翻译软件，不懂就搜、就问。</p>
+    </div>
+    <div class="golden-quote">
+      <span class="meta text-xs tracking-wider ink-blue">07</span>
+      <p class="mt-1 mb-0"><strong>"努力的人，一定不会没饭吃。"</strong> —— 63岁都能行，你也可以。</p>
+    </div>
+  </div>
+
+  <hr class="hairline" />
+
+  <!-- ========== 术语表 ========== -->
+  <h2>附：新人必懂的词（术语速查）</h2>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr><th>词</th><th>全称</th><th>简单说就是…</th></tr>
+      </thead>
+      <tbody>
+        <tr><td><strong>跨境电商</strong></td><td>Cross-border E-commerce</td><td>把中国商品通过互联网卖给外国人</td></tr>
+        <tr><td><strong>SKU</strong></td><td>Stock Keeping Unit</td><td>一个具体的款式/规格。红色T恤和蓝色T恤是两个SKU</td></tr>
+        <tr><td><strong>货代</strong></td><td>Freight Forwarder</td><td>帮你把货从中国运到国外的物流公司</td></tr>
+        <tr><td><strong>平台</strong></td><td>Platform</td><td>你开店的"商场"，比如淘宝就是国内电商平台；亚马逊就是国外平台</td></tr>
+        <tr><td><strong>FBN</strong></td><td>Fulfillment by Noon</td><td>Noon平台帮你发货：你把货提前送到Noon仓库，有订单平台直接发给买家</td></tr>
+        <tr><td><strong>FBA</strong></td><td>Fulfillment by Amazon</td><td>同上，不过是亚马逊帮你发货</td></tr>
+        <tr><td><strong>一件代发</strong></td><td>Dropshipping</td><td>有人下单你才让供应商发货，自己不囤货。也叫"自发货"或"FBP"</td></tr>
+        <tr><td><strong>爆单</strong></td><td>Sales Surge</td><td>突然之间产品卖光了 —— 大好事！</td></tr>
+        <tr><td><strong>选品</strong></td><td>Product Selection</td><td>选择你要卖什么商品</td></tr>
+        <tr><td><strong>曝光</strong></td><td>Impression</td><td>你的商品出现在买家面前的次数</td></tr>
+        <tr><td><strong>亚马逊</strong></td><td>Amazon</td><td>全球最大的电商平台，相当于"国际版淘宝"</td></tr>
+        <tr><td><strong>Noon</strong></td><td>noon.com</td><td>中东最大的本土电商平台，相当于"中东版淘宝"</td></tr>
+        <tr><td><strong>中东</strong></td><td>Middle East</td><td>主要指阿联酋（迪拜）、沙特阿拉伯等国家。有钱人多、市场在增长</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <hr class="hairline-short" />
+
+  <!-- 尾部 -->
+  <footer class="text-center" style="color:#6b665b">
+    <p class="text-sm meta">
+      内容来源：小红书博主 <strong class="ink-blue">"63岁跨境新人"</strong> 的视频
+    </p>
+    <p class="text-sm meta">
+      她用亲身经历证明了：<strong class="warm">年龄和英语，都不是做跨境的障碍。</strong>
+    </p>
+    <div class="mt-6 rule pt-4 border-t text-xs meta tracking-wider" style="color:#8a8579">
+      整理于 2026 年 · 给所有想尝试的人
+    </div>
+  </footer>
+
+</div>
+
+</body>
+</html>
